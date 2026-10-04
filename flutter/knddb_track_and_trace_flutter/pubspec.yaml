@@ -24,14 +24,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-# Пока базовый пакет не опубликован на pub.dev, он берётся из этого же
-# репозитория. Переопределения зависимостей не влияют на потребителей пакета,
-# поэтому публикации не мешают. После публикации knddb_track_and_trace этот
-# блок можно удалить.
-dependency_overrides:
-  knddb_track_and_trace:
-    path: ../../dart/knddb_track_and_trace
-
 topics:
   - api
   - sdk

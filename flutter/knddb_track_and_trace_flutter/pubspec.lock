@@ -211,9 +211,10 @@ packages:
   knddb_track_and_trace:
     dependency: "direct main"
     description:
-      path: "../../dart/knddb_track_and_trace"
-      relative: true
-    source: path
+      name: knddb_track_and_trace
+      sha256: dbe78e7d654d3036ed9132585cc5c022d02b2dbc0bfae8ec4399d4438ea4fae3
+      url: "https://pub.dev"
+    source: hosted
     version: "1.0.1"
   leak_tracker:
     dependency: transitive
