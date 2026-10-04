@@ -576,27 +576,41 @@ dotnet nuget push ./artifacts/Knmdb.TrackAndTrace.<версия>.nupkg \
 
 На pub.dev нет API-ключей: публикация подтверждается в браузере, а учётные
 данные сохраняются локально после первого входа. Порядок важен — пакет
-для Flutter зависит от Dart-пакета.
+для Flutter зависит от Dart-пакета, поэтому базовый публикуется первым.
+
+**Опубликовано:**
+
+| Пакет | Версия |
+|---|---|
+| [`knddb_track_and_trace`](https://pub.dev/packages/knddb_track_and_trace) | 1.0.1 |
+| `knddb_track_and_trace_flutter` | готов к публикации |
+
+Публикация пакета для Flutter:
 
 ```bash
-# 1. Проверить и опубликовать базовый Dart-пакет
-cd dart/knddb_track_and_trace
-dart pub publish --dry-run     # должно быть: Package has 0 warnings
-dart pub publish               # откроет браузер для подтверждения
-
-# 2. Убедиться, что пакет появился на pub.dev, затем убрать dependency_overrides
-#    из flutter/knddb_track_and_trace_flutter/pubspec.yaml (блок с пометкой
-#    «Пока базовый пакет не опубликован»).
-
-# 3. Проверить и опубликовать пакет для Flutter
 cd flutter/knddb_track_and_trace_flutter
 flutter pub get
-flutter pub publish --dry-run  # должно быть: Package has 0 warnings and 0 hints
-flutter pub publish
+flutter pub publish --dry-run   # должно быть: Package has 0 warnings
+flutter pub publish             # подтвердить «y», затем авторизация в браузере
 ```
 
-Версия пакета — поле `version` в соответствующем `pubspec.yaml`. Опубликованную
-версию изменить нельзя, поэтому при правках поднимайте номер.
+При публикации новой версии поднимайте `version` в соответствующем
+`pubspec.yaml`: опубликованную версию изменить нельзя. Если базовый пакет
+обновлён, поднимите его версию в зависимостях пакета для Flutter
+(`knddb_track_and_trace: ^<новая версия>`).
+
+Для локальной разработки из этого репозитория можно временно добавить
+переопределение зависимости — оно не влияет на потребителей пакета:
+
+```yaml
+dependency_overrides:
+  knddb_track_and_trace:
+    path: ../../dart/knddb_track_and_trace
+```
+
+Но при публикации такое переопределение даёт предупреждение
+(`Non-dev dependencies are overridden`), поэтому перед `pub publish`
+его нужно удалить.
 
 | Проект | Назначение |
 |---|---|
