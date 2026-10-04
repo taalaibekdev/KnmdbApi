@@ -1,0 +1,2771 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Kyrgyz National Medicinal Database Api",
+    "version": "v1"
+  },
+  "paths": {
+    "/connect/logout": {
+      "post": {
+        "tags": [
+          "Authorization"
+        ],
+        "summary": "You can logout with this method.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/connect/token": {
+      "post": {
+        "tags": [
+          "Authorization"
+        ],
+        "summary": "You can get access token with this method.",
+        "description": "### REMARKS <br/><br/>Http request content-type header must be application/x-www-form-urlencoded<br/>grant_type either password or refresh_token<br/>if grant_type is password then you must send user name and password<br/>if grant_type is refresh_token then you must send refresh_token with request body<br/>Sample request body: ```grant_type=password&username=put_user_name_in_here&password=put_user_password_in_here```<br/>if you have refresh token you can get access token without sending user name and password<br/>To test connection use: <br/>```curl -H \"content-type: application/x-www-form-urlencoded\" -d \"grant_type=password&username=<your_login>&password=<your_password>\" https://testndbapi.med.kg/connect/token```",
+        "responses": {
+          "200": {
+            "description": "access_token: This field contains access token<br/>token_type: This field contains token type<br/>expires_in: This field contains expires in minutes<br/>scope: This field contains scopes<br/>refresh_token: This field contains refresh token"
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/GetAllStakeholders": {
+      "get": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "GetAllStakeholders",
+        "responses": {
+          "200": {
+            "description": "Stakeholder list retrieved",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetAllStakeholdersResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetAllStakeholdersResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetAllStakeholdersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/GetSupportedQRTypes": {
+      "get": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "GetSupportedQRTypes",
+        "responses": {
+          "200": {
+            "description": "QR code type list retrieved<br/>            id: The QRcode model ID is id number of QR type<br/>            name: Name of the QR type<br/>            description: Description of the of QR type. Depending on QR type the order of Data matrix information differs. Ex: For Europe QR type \"01GTIN(14) 21SerialNumber(18) 17Expirydate(yymmdd)(6) 10Batchnumber(11)\" GTIN is 14 characters length, Serial Number 18 characters length, Expiry date is 6 characters with yymmdd format, Batch number is 11 characters.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetSupportedQRTypesResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetSupportedQRTypesResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetSupportedQRTypesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/ProductInquiryQRCode": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "ProductInquiryQRCode",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithQrCodeRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithQrCodeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithQrCodeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithQrCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/ProductInquiryGtinSn": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "ProductInquiryGTINSN",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithGtinSnRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithGtinSnRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithGtinSnRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithGtinSnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/ImportDeclaration": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "ImportDeclaration",
+        "requestBody": {
+          "description": "ImportDeclarationRequest<br/>            gtin: GTIN information<br/>            batchNo: Batch number information<br/>            expirationDate: Expiration date yyyy-mm-dd<br/>            price: Unit price of the drug<br/>            productionDate: Production date information yyyy-mm-dd<br/>            documentDate: Document date information yyyy-mm-dd<br/>            documentNo:  Document number information<br/>            description: Description of import declaration(can write any text information)<br/>            qrTypeId: QR code type from api/TrackAndTrace/GetsupportedQRTypes<br/>            importApplicationRegistrationNumber: Import application registration number<br/>            codes: QRcode list",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ImportDeclarationRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ImportDeclarationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ImportDeclarationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ImportDeclarationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "stakeholderCode: From api/TrackAndTrace/GetAllStakeholders <br/>declarationId: Import declaration id<br/>declarationDate: Import declaration date yyyy-mm-dd<br/>gtin: Gtin information<br/>productionDate: Production date yyyy-mm-dd<br/>expirationDate: Expiration date yyyy-mm-dd<br/>batchNo: Batch number information",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ImportDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ImportDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ImportDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/ProductionDeclaration": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "ProductionDeclaration",
+        "requestBody": {
+          "description": "ProductionDeclarationRequest<br/>            gtin: GTIN information<br/>            batchNo: Batch number information<br/>            expirationDate: Expiration date yyyy-mm-dd<br/>            price: Unit price of the drug<br/>            productionDate: Production date information yyyy-mm-dd<br/>            documentDate: Document date information yyyy-mm-dd<br/>            documentNo:  Document number information<br/>            description: Description of import declaration(can write any text information)<br/>            qrTypeId: QR code type from api/TrackAndTrace/GetsupportedQRTypes<br/>            declarationDate: Declaration date information<br/>            codes: QRcode list",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ProductionDeclarationRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ProductionDeclarationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ProductionDeclarationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ProductionDeclarationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "stakeholderCode: From api/TrackAndTrace/GetAllStakeholders <br/>declarationId: Import declaration id<br/>declarationDate: Import declaration date yyyy-mm-dd<br/>gtin: Gtin information<br/>productionDate: Production date yyyy-mm-dd<br/>expirationDate: Expiration date yyyy-mm-dd<br/>batchNo: Batch number information",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ProductionDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ProductionDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.ProductionDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/TransferDeclaration": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "TransferDeclaration",
+        "requestBody": {
+          "description": "fromStakeholder: Stakeholder code that makes transfer<br/>toStakeholder: Stakeholder code that receives transfer<br/>declarationDate: Declaration date information yyyy-mm-dd<br/>description: Description about transfer (can be anytext)<br/>details: [<br/>qrCode: QRcode information<br/>price: Price information<br/>]",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "declarationId: Transfer declaration id <br/>declarationDate: Declaration date information yyyy-mm-dd",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/TransferAccept": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "TransferAccept",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferAcceptRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferAcceptRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferAcceptRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferAcceptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/TransferCancel": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "TransferCancel",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferCancelRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferCancelRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferCancelRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferCancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationCancelResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationCancelResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationCancelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/TransferReturn": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "TransferReturn",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferReturnRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferReturnRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferReturnRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferReturnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/TransferReturnCancel": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "TransferReturnCancel",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferCancelRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferCancelRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferCancelRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferCancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationCancelResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationCancelResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationCancelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/StockDeclaration": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "StockDeclaration",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/StockDeclarationCancel": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "StockDeclarationCancel",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationCancelRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationCancelRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationCancelRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationCancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationCancelResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationCancelResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationCancelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/GetTransferDeclaration": {
+      "get": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "GetTransferDeclaration",
+        "parameters": [
+          {
+            "name": "declarationId",
+            "in": "query",
+            "description": "Transfer declaration id",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "declarationId: Transfer declaration id<br/>fromStakeholder: Stakeholder information that makes transfer<br/>toStakeholder: Stakeholder information that receives transfer<br/>declarationDate: Declaration date information yyyy-mm-dd<br/>description: Description information<br/>details: [<br/>qrCode: Qrcode information<br/>gtin: Gtin information<br/>batchNumber: Batch number information<br/>expirationDate: Expiration date information yyyy-mm-dd<br/>serialNumber: Serial number information<br/>price: Price of medicine information<br/>]",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/SalesDeclaration": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "SalesDeclaration",
+        "requestBody": {
+          "description": "SalesDeclarationRequest<br/>            prescriptionId: The id of the prescription<br/>            patientId: Pin number of citizen<br/>            repaymentAgency: Information about repayment agency (ex: FOMS)<br/>            details: [<br/>            qrCode: Qr code information<br/>            price: price information of the medicin<br/>            ]",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "stakeholderCode: From api/TrackAndTrace/GetAllStakeholders <br/>declarationId: Transfer declaration id<br/>declarationDate: Declaration date information yyyy-mm-dd",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/SalesDeclarationCancel": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "SalesDeclarationCancel",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationCancelRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationCancelRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationCancelRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationCancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/SalesDeclarationBoxCancel": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "SalesDeclarationBoxCancel",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationBoxCancelRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationBoxCancelRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationBoxCancelRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationBoxCancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/GetTransferListByFilter": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "GetTransferListByFilter",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferListByFilterRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferListByFilterRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferListByFilterRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferListByFilterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferListByFilterResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferListByFilterResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetTransferListByFilterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/GetStockInheldList": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "GetStockInheldList",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/GetStockInheldListByGtin": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "GetStockInheldListByGtin",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/GetPartialSaleInfo": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "GetPartialSaleInfo",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetPartialSaleInfoRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetPartialSaleInfoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetPartialSaleInfoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetPartialSaleInfoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetStockInheldListByGtinResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/DeactivateDeclaration": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "Deactivate Declaration",
+        "requestBody": {
+          "description": "Consumption type<br/>SYSTEM IN = 0,<br/>SYSTEM OUT = 10,<br/>PRODUCTION WASTAGE = 20,<br/>DISPOSAL DUE TO WITHDRAWAL = 30,<br/>DISPOSAL FOR DEADLINE = 40,<br/>REVISION = 50,  <br/>CONSUMPTION = 60",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.DeactivateDeclarationRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.DeactivateDeclarationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.DeactivateDeclarationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.DeactivateDeclarationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TrackAndTrace/GetMedicineList": {
+      "post": {
+        "tags": [
+          "TrackAndTrace"
+        ],
+        "summary": "GetMedicineList",
+        "requestBody": {
+          "description": "LastUpdate",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetMedicineListRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetMedicineListRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetMedicineListRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetMedicineListRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetMedicineListResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetMedicineListResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.GetMedicineListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "KNDDBBusiness.Interface.Api.DeactivateDeclarationRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Description",
+            "nullable": true
+          },
+          "consumptionType": {
+            "$ref": "#/components/schemas/KNDDBModel.TTConsumptionDeclaration.ConsumptionTypeEnum"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.DeactivateDeclarationRequestDetail"
+            },
+            "description": "Deactivate Declaration Request Details",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Deactivate Declaration Request"
+      },
+      "KNDDBBusiness.Interface.Api.DeactivateDeclarationRequestDetail": {
+        "type": "object",
+        "properties": {
+          "qrCode": {
+            "type": "string",
+            "description": "QRcode information",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Deactivate Declaration Request Detail"
+      },
+      "KNDDBBusiness.Interface.Api.GetAllStakeholdersResponse": {
+        "type": "object",
+        "properties": {
+          "numberOfStakeholders": {
+            "type": "integer",
+            "description": "Total number of stakeholders",
+            "format": "int32"
+          },
+          "stakeholders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StakeholderInfo"
+            },
+            "description": "List of stakeholders",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response contains all stakeholders list"
+      },
+      "KNDDBBusiness.Interface.Api.GetMedicineListRequest": {
+        "type": "object",
+        "properties": {
+          "lastUpdate": {
+            "type": "string",
+            "description": "Get medicines updated after this date",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Get Medicine List Request"
+      },
+      "KNDDBBusiness.Interface.Api.GetMedicineListResponse": {
+        "type": "object",
+        "properties": {
+          "numberOfMedicines": {
+            "type": "integer",
+            "description": "Total number of medicines",
+            "format": "int32"
+          },
+          "medicineList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.MedicineInfo"
+            },
+            "description": "List of medicines",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response contains Medicine list"
+      },
+      "KNDDBBusiness.Interface.Api.GetPartialSaleInfoRequest": {
+        "type": "object",
+        "properties": {
+          "qrCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.Api.GetStockInheldListByGtinRequest": {
+        "type": "object",
+        "properties": {
+          "gtin": {
+            "type": "string",
+            "description": "Gtin",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "GetStockInheldListByGtinRequest"
+      },
+      "KNDDBBusiness.Interface.Api.GetStockInheldListByGtinResponse": {
+        "type": "object",
+        "properties": {
+          "stockInheldList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockInheldInfo"
+            },
+            "description": "StockInheldList",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "GetStockInheldListByGtinResponse"
+      },
+      "KNDDBBusiness.Interface.Api.GetStockInheldListResponse": {
+        "type": "object",
+        "properties": {
+          "stockInheldSummaryList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockInheldSummaryInfo"
+            },
+            "description": "StockInheldSummaryList",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "GetStockInheldListResponse"
+      },
+      "KNDDBBusiness.Interface.Api.GetSupportedQRTypesResponse": {
+        "type": "object",
+        "properties": {
+          "qrTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.QRTypeInfo"
+            },
+            "description": "List of QR Code types",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Reponse contains supported qr types"
+      },
+      "KNDDBBusiness.Interface.Api.GetTransferDeclarationResponse": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "Transfer declaration id",
+            "format": "int64"
+          },
+          "documentNo": {
+            "type": "string",
+            "description": "DocumentNo",
+            "nullable": true
+          },
+          "documentDate": {
+            "type": "string",
+            "description": "DocumentDate",
+            "format": "date-time",
+            "nullable": true
+          },
+          "fromStakeholder": {
+            "type": "integer",
+            "description": "Stakeholder information that makes transfer",
+            "format": "int64"
+          },
+          "toStakeholder": {
+            "type": "integer",
+            "description": "Stakeholder information that receives transfer",
+            "format": "int64"
+          },
+          "declarationDate": {
+            "type": "string",
+            "description": "Declaration date information yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description information",
+            "nullable": true
+          },
+          "currentState": {
+            "$ref": "#/components/schemas/KNDDBModel.TTTransferDeclaration.TransferStates"
+          },
+          "isReturn": {
+            "type": "boolean",
+            "description": "IsReturn"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.TransferDeclarationDetailItem"
+            },
+            "description": "List of transfer details",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "GetTransferDeclarationResponse"
+      },
+      "KNDDBBusiness.Interface.Api.GetTransferListByFilterRequest": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "DeclarationId",
+            "format": "int64",
+            "nullable": true
+          },
+          "documentNo": {
+            "type": "string",
+            "description": "Document number",
+            "nullable": true
+          },
+          "documentDate": {
+            "type": "string",
+            "description": "Document date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "declarationDateFrom": {
+            "type": "string",
+            "description": "Declaration date information yyyy-mm-dd",
+            "format": "date-time",
+            "nullable": true
+          },
+          "declarationDateTo": {
+            "type": "string",
+            "description": "Declaration date information yyyy-mm-dd",
+            "format": "date-time",
+            "nullable": true
+          },
+          "currentState": {
+            "$ref": "#/components/schemas/KNDDBModel.TTTransferDeclaration.TransferStates"
+          },
+          "transferType": {
+            "$ref": "#/components/schemas/KNDDBModel.TTTransferDeclaration.TransferTypes"
+          },
+          "isReturn": {
+            "type": "boolean",
+            "description": "Is return transfer",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "GetTransferListByFilterRequest"
+      },
+      "KNDDBBusiness.Interface.Api.GetTransferListByFilterResponse": {
+        "type": "object",
+        "properties": {
+          "transferDeclarationList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationInfo"
+            },
+            "description": "TransferDeclarationList",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "GetTransferListByFilterResponse"
+      },
+      "KNDDBBusiness.Interface.Api.ImportDeclarationRequest": {
+        "required": [
+          "batchNo",
+          "documentDate",
+          "documentNo",
+          "expirationDate",
+          "gtin",
+          "price",
+          "productionDate",
+          "qrCodes",
+          "qrTypeId"
+        ],
+        "type": "object",
+        "properties": {
+          "gtin": {
+            "minLength": 1,
+            "type": "string",
+            "description": "GTIN information"
+          },
+          "batchNo": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Batch number information"
+          },
+          "expirationDate": {
+            "type": "string",
+            "description": "Expiration date yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "price": {
+            "type": "number",
+            "description": "unit price of the drug",
+            "format": "double"
+          },
+          "productionDate": {
+            "type": "string",
+            "description": "production date information yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "documentDate": {
+            "type": "string",
+            "description": "document date information yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "documentNo": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Document number information"
+          },
+          "description": {
+            "type": "string",
+            "description": "description of import declaration (can write any text information)",
+            "nullable": true
+          },
+          "qrTypeId": {
+            "type": "integer",
+            "description": "QR code type from api/TrackAndTrace/GetsupportedQRTypes",
+            "format": "int32"
+          },
+          "importApplicationRegistrationNumber": {
+            "type": "integer",
+            "description": "Import application registration number",
+            "format": "int64",
+            "nullable": true
+          },
+          "importerCompanyTaxNumber": {
+            "type": "string",
+            "description": "Importer Company Tax Number",
+            "nullable": true
+          },
+          "stakeholderCode": {
+            "type": "integer",
+            "description": "To Warehouse Code",
+            "format": "int64",
+            "nullable": true
+          },
+          "qrCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "QRCode list"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ImportDeclarationRequest"
+      },
+      "KNDDBBusiness.Interface.Api.ImportDeclarationResponse": {
+        "type": "object",
+        "properties": {
+          "stakeholderCode": {
+            "type": "integer",
+            "description": "from api/TrackAndTrace/GetAllStakeholders",
+            "format": "int64"
+          },
+          "declarationId": {
+            "type": "integer",
+            "description": "Import declaration id",
+            "format": "int64"
+          },
+          "declarationDate": {
+            "type": "string",
+            "description": "Import declaration date yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "gtin": {
+            "type": "string",
+            "description": "Gtin information",
+            "nullable": true
+          },
+          "productionDate": {
+            "type": "string",
+            "description": "Production date yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "expirationDate": {
+            "type": "string",
+            "description": "Expiration date yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "batchNo": {
+            "type": "string",
+            "description": "Batch number information",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ImportDeclarationResponse"
+      },
+      "KNDDBBusiness.Interface.Api.MedicineInfo": {
+        "type": "object",
+        "properties": {
+          "gtin": {
+            "type": "string",
+            "nullable": true
+          },
+          "brandName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullBrandName": {
+            "type": "string",
+            "nullable": true
+          },
+          "manufacturerCompany": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "atcCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "formula": {
+            "type": "string",
+            "nullable": true
+          },
+          "innList": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackAndTraceStatus": {
+            "$ref": "#/components/schemas/KNDDBModel.Product.TrackAndTraceStatusEnum"
+          },
+          "lastUpdate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Medicine Info"
+      },
+      "KNDDBBusiness.Interface.Api.ProductionDeclarationRequest": {
+        "type": "object",
+        "properties": {
+          "gtin": {
+            "type": "string",
+            "description": "GTIN information",
+            "nullable": true
+          },
+          "batchNo": {
+            "type": "string",
+            "description": "Batch number information",
+            "nullable": true
+          },
+          "expirationDate": {
+            "type": "string",
+            "description": "Expiration date yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "price": {
+            "type": "number",
+            "description": "Unit price of the drug",
+            "format": "double"
+          },
+          "productionDate": {
+            "type": "string",
+            "description": "Production date information yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "documentDate": {
+            "type": "string",
+            "description": "Document date information yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "documentNo": {
+            "type": "string",
+            "description": "Document number information",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of import declaration (can write any text information)",
+            "nullable": true
+          },
+          "qrTypeId": {
+            "type": "integer",
+            "description": "From QR code type from api/TrackAndTrace/GetsupportedQRTypes",
+            "format": "int32"
+          },
+          "declarationDate": {
+            "type": "string",
+            "description": "Declaration date information yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "stakeholderCode": {
+            "type": "integer",
+            "description": "Stakeholder Code",
+            "format": "int64",
+            "nullable": true
+          },
+          "qrCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "QRcode list",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": ""
+      },
+      "KNDDBBusiness.Interface.Api.ProductionDeclarationResponse": {
+        "type": "object",
+        "properties": {
+          "stakeholderCode": {
+            "type": "integer",
+            "description": "from api/TrackAndTrace/GetAllStakeholders",
+            "format": "int64"
+          },
+          "declarationId": {
+            "type": "integer",
+            "description": "Import declaration id",
+            "format": "int64"
+          },
+          "declarationDate": {
+            "type": "string",
+            "description": "Import declaration date yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "gtin": {
+            "type": "string",
+            "description": "Gtin information",
+            "nullable": true
+          },
+          "productionDate": {
+            "type": "string",
+            "description": "Production date yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "expirationDate": {
+            "type": "string",
+            "description": "Expiration date yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "batchNo": {
+            "type": "string",
+            "description": "Batch number information",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ProductionDeclarationResponse"
+      },
+      "KNDDBBusiness.Interface.Api.QRTypeInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Id for qrcode type",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of qrcode type",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description for qrcode type",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "QR Code Type information"
+      },
+      "KNDDBBusiness.Interface.Api.SalesDeclarationBoxCancelRequest": {
+        "type": "object",
+        "properties": {
+          "qrCode": {
+            "type": "string",
+            "description": "QrCode",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Sales declaration box cancel request"
+      },
+      "KNDDBBusiness.Interface.Api.SalesDeclarationCancelRequest": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "DeclarationId",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Sales declaration cancel request"
+      },
+      "KNDDBBusiness.Interface.Api.SalesDeclarationDetail": {
+        "type": "object",
+        "properties": {
+          "qrCode": {
+            "type": "string",
+            "description": "QRCode",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Price",
+            "format": "double"
+          },
+          "isPartialSale": {
+            "type": "boolean",
+            "description": "IsPartialSale"
+          },
+          "partialSaleAmount": {
+            "type": "number",
+            "description": "PartialSaleAmount",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "SalesDeclarationDetail"
+      },
+      "KNDDBBusiness.Interface.Api.SalesDeclarationRequest": {
+        "type": "object",
+        "properties": {
+          "prescriptionId": {
+            "type": "string",
+            "description": "The id of the prescription",
+            "nullable": true
+          },
+          "patientId": {
+            "type": "string",
+            "description": "Pin number of citizen",
+            "nullable": true
+          },
+          "requestNumber": {
+            "type": "string",
+            "description": "Request Number (Only for hospital-номер требования)",
+            "nullable": true
+          },
+          "departmentName": {
+            "type": "string",
+            "description": "Department Name (Only for hospital)",
+            "nullable": true
+          },
+          "isPharmacyConsuption": {
+            "type": "boolean",
+            "description": "Is Pharmacy Sales"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.SalesDeclarationDetail"
+            },
+            "description": "List of sales declaration detail",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "SalesDeclarationRequest"
+      },
+      "KNDDBBusiness.Interface.Api.SalesDeclarationResponse": {
+        "type": "object",
+        "properties": {
+          "stakeholderCode": {
+            "type": "integer",
+            "description": "StakeholderCode",
+            "format": "int64"
+          },
+          "declarationId": {
+            "type": "integer",
+            "description": "DeclarationId",
+            "format": "int64"
+          },
+          "declarationDate": {
+            "type": "string",
+            "description": "DeclarationDate",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "SalesDeclarationResponse"
+      },
+      "KNDDBBusiness.Interface.Api.StakeholderInfo": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Unique stakeholder code",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "description": "Stakeholder name",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/KNDDBModel.TTStakeholder.StakeholderType"
+          },
+          "taxNumber": {
+            "type": "string",
+            "description": "Tax number of stakeholder",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "description": "Address of stakeholder",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "description": "City of stakeholder",
+            "nullable": true
+          },
+          "district": {
+            "type": "string",
+            "description": "District of stakeholder",
+            "nullable": true
+          },
+          "parentCode": {
+            "type": "integer",
+            "description": "Parent stakeholder code if any",
+            "format": "int64",
+            "nullable": true
+          },
+          "parentName": {
+            "type": "string",
+            "description": "Parent Stakeholder name if any",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "StakeholderInfo"
+      },
+      "KNDDBBusiness.Interface.Api.StockDeclarationCancelRequest": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "Declaration Id",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Stock Declaration Cancel Request"
+      },
+      "KNDDBBusiness.Interface.Api.StockDeclarationCancelResponse": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "Declaration Id",
+            "format": "int64"
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "IsSuccess"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Stock Declaration Cancel Response"
+      },
+      "KNDDBBusiness.Interface.Api.StockDeclarationRequest": {
+        "type": "object",
+        "properties": {
+          "declarationDate": {
+            "type": "string",
+            "description": "Declaration Date",
+            "format": "date-time"
+          },
+          "stakeholderCode": {
+            "type": "integer",
+            "description": "Stakeholder Code",
+            "format": "int64"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description",
+            "nullable": true
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.StockDeclarationRequestDetailItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "StockDeclarationRequest"
+      },
+      "KNDDBBusiness.Interface.Api.StockDeclarationRequestDetailItem": {
+        "type": "object",
+        "properties": {
+          "batchNumber": {
+            "type": "string",
+            "description": "Batch Number",
+            "nullable": true
+          },
+          "expirationDate": {
+            "type": "string",
+            "description": "Expiration Date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "qrCode": {
+            "type": "string",
+            "description": "QrCode",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.Api.StockDeclarationResponse": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "declarationDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.Api.StockInheldInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "currentStakeholderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "drugPackageItemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gtin": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullBrandName": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expirationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "serialNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "declarationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "partialSaleAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "currentState": {
+            "$ref": "#/components/schemas/KNDDBModel.TTProductBox.StatesEnum"
+          },
+          "qrCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.Api.StockInheldSummaryInfo": {
+        "type": "object",
+        "properties": {
+          "gtin": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullBrandName": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.Api.TransferAcceptRequest": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "DeclarationId",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferAcceptRequest"
+      },
+      "KNDDBBusiness.Interface.Api.TransferCancelRequest": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "DeclarationId",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferCancelRequest"
+      },
+      "KNDDBBusiness.Interface.Api.TransferDeclarationCancelResponse": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "declarationDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.Api.TransferDeclarationInfo": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "DeclarationId",
+            "format": "int64"
+          },
+          "documentNo": {
+            "type": "string",
+            "description": "Document number",
+            "nullable": true
+          },
+          "documentDate": {
+            "type": "string",
+            "description": "Document date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "declarationDate": {
+            "type": "string",
+            "description": "Declaration date information yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "fromStakeholderCode": {
+            "type": "integer",
+            "description": "From Stakeholder Code",
+            "format": "int64"
+          },
+          "fromStakeholder": {
+            "type": "string",
+            "description": "Stakeholder information that makes transfer",
+            "nullable": true
+          },
+          "toStakeholderCode": {
+            "type": "integer",
+            "description": "To Stakeholder Code",
+            "format": "int64"
+          },
+          "toStakeholder": {
+            "type": "string",
+            "description": "Stakeholder information that receives transfer",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Total count of transfer details",
+            "format": "int64"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description about transfer (can be any text)",
+            "nullable": true
+          },
+          "currentState": {
+            "$ref": "#/components/schemas/KNDDBModel.TTTransferDeclaration.TransferStates"
+          },
+          "transferType": {
+            "$ref": "#/components/schemas/KNDDBModel.TTTransferDeclaration.TransferTypes"
+          },
+          "isReturn": {
+            "type": "boolean",
+            "description": "Is return transfer"
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferDeclarationInfo"
+      },
+      "KNDDBBusiness.Interface.Api.TransferDeclarationRequest": {
+        "type": "object",
+        "properties": {
+          "documentNo": {
+            "type": "string",
+            "description": "DocumentNo",
+            "nullable": true
+          },
+          "documentDate": {
+            "type": "string",
+            "description": "DocumentDate",
+            "format": "date-time",
+            "nullable": true
+          },
+          "fromStakeholder": {
+            "type": "integer",
+            "description": "Stakeholder information that makes transfer",
+            "format": "int64"
+          },
+          "toStakeholder": {
+            "type": "integer",
+            "description": "Stakeholder information that receives transfer",
+            "format": "int64"
+          },
+          "declarationDate": {
+            "type": "string",
+            "description": "Declaration date information yyyy-mm-dd",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description about transfer (can be any text)",
+            "nullable": true
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferDeclarationRequestDetail"
+            },
+            "description": "List of transfer details",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferDeclarationRequest"
+      },
+      "KNDDBBusiness.Interface.Api.TransferDeclarationRequestDetail": {
+        "type": "object",
+        "properties": {
+          "qrCode": {
+            "type": "string",
+            "description": "QRcode information",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Price information",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferDeclarationRequestDetail"
+      },
+      "KNDDBBusiness.Interface.Api.TransferDeclarationResponse": {
+        "type": "object",
+        "properties": {
+          "declarationId": {
+            "type": "integer",
+            "description": "Transfer declaration id",
+            "format": "int64"
+          },
+          "declarationDate": {
+            "type": "string",
+            "description": "Declaration date information yyyy-mm-dd",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferDeclarationResponse"
+      },
+      "KNDDBBusiness.Interface.Api.TransferReturnRequest": {
+        "type": "object",
+        "properties": {
+          "documentNo": {
+            "type": "string",
+            "description": "DocumentNo",
+            "nullable": true
+          },
+          "documentDate": {
+            "type": "string",
+            "description": "DocumentDate",
+            "format": "date-time",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description about transfer (can be any text)",
+            "nullable": true
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.Api.TransferReturnRequestDetail"
+            },
+            "description": "List of transfer details",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferReturnRequest"
+      },
+      "KNDDBBusiness.Interface.Api.TransferReturnRequestDetail": {
+        "type": "object",
+        "properties": {
+          "qrCode": {
+            "type": "string",
+            "description": "QRcode information",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferReturnRequestDetail"
+      },
+      "KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryHistory": {
+        "type": "object",
+        "properties": {
+          "declarationNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "stakeHolder": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "$ref": "#/components/schemas/KNDDBModel.TTProductBox.StatesEnum"
+          },
+          "stateDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "partialSaleAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryResult": {
+        "type": "object",
+        "properties": {
+          "productBoxId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "productPackageItemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "gtin": {
+            "type": "string",
+            "nullable": true
+          },
+          "serialNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "productionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expirationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "qrCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "stakeHolderName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isExpired": {
+            "type": "boolean"
+          },
+          "isAvailableForSale": {
+            "type": "boolean"
+          },
+          "isSuspendedOrRecalled": {
+            "type": "boolean"
+          },
+          "productStatus": {
+            "$ref": "#/components/schemas/KNDDBModel.TTProductBox.StatusEnum"
+          },
+          "productState": {
+            "$ref": "#/components/schemas/KNDDBModel.TTProductBox.StatesEnum"
+          },
+          "suspendRecallInfo": {
+            "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.SuspendRecallInfo"
+          },
+          "productInquiryHistory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryHistory"
+            },
+            "nullable": true
+          },
+          "overallRetailPrice": {
+            "type": "string",
+            "nullable": true
+          },
+          "certificateNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructionForUse": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructionForUseDocId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "packagingImageDocId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isFomsDrug": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "compensation": {
+            "type": "string",
+            "nullable": true
+          },
+          "consumptionType": {
+            "$ref": "#/components/schemas/KNDDBModel.TTConsumptionDeclaration.ConsumptionTypeEnum"
+          },
+          "manufacturerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "partialSaleRemainingAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithGtinSnRequest": {
+        "type": "object",
+        "properties": {
+          "gtin": {
+            "type": "string",
+            "description": "Gtin",
+            "nullable": true
+          },
+          "serialNumber": {
+            "type": "string",
+            "description": "SeralNumber",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ProductInquiryInput"
+      },
+      "KNDDBBusiness.Interface.TrackAndTrace.ProductInquiryWithQrCodeRequest": {
+        "type": "object",
+        "properties": {
+          "qrCode": {
+            "type": "string",
+            "description": "QrCode",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ProductInquiryWithQrCodeRequest"
+      },
+      "KNDDBBusiness.Interface.TrackAndTrace.SuspendRecallInfo": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KNDDBBusiness.Interface.TrackAndTrace.TransferDeclarationDetailItem": {
+        "type": "object",
+        "properties": {
+          "productBoxId": {
+            "type": "integer",
+            "description": "ProductBoxId",
+            "format": "int64"
+          },
+          "drugPackageItemId": {
+            "type": "string",
+            "description": "DrugPackageItemId",
+            "format": "uuid"
+          },
+          "fullBrandName": {
+            "type": "string",
+            "description": "FullBrandName",
+            "nullable": true
+          },
+          "qrCode": {
+            "type": "string",
+            "description": "QRCode",
+            "nullable": true
+          },
+          "gtin": {
+            "type": "string",
+            "description": "Gtin",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "description": "BatchNumber",
+            "nullable": true
+          },
+          "expirationDate": {
+            "type": "string",
+            "description": "ExpirationDate",
+            "format": "date-time",
+            "nullable": true
+          },
+          "serialNumber": {
+            "type": "string",
+            "description": "SerialNumber",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Price",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "TransferDeclarationDetailItem"
+      },
+      "KNDDBModel.Product.TrackAndTraceStatusEnum": {
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "description": "<p>Members:</p><ul><li><i>1</i> - \r\n                                          Not Required</li> <li><i>2</i> - \r\n                                          Required</li> <li><i>3</i> - \r\n                                          Label And TraceMandatory</li> </ul>",
+        "format": "int32"
+      },
+      "KNDDBModel.TTConsumptionDeclaration.ConsumptionTypeEnum": {
+        "enum": [
+          0,
+          10,
+          20,
+          30,
+          40,
+          50,
+          60,
+          70,
+          80,
+          90,
+          100
+        ],
+        "type": "integer",
+        "description": "<p>Members:</p><ul><li><i>0</i> - \r\n                                          SYSTEM IN</li> <li><i>10</i> - \r\n                                          SYSTEM OUT</li> <li><i>20</i> - \r\n                                          PRODUCTION WASTAGE</li> <li><i>30</i> - \r\n                                          DISPOSAL DUE TO WITHDRAWAL</li> <li><i>40</i> - \r\n                                          DISPOSAL FOR DEADLINE</li> <li><i>50</i> - \r\n                                          REVISION</li> <li><i>60</i> - \r\n                                          CONSUMPTION</li> <li><i>70</i> - \r\n                                          LOST</li> <li><i>80</i> - \r\n                                          DAMAGED</li> <li><i>90</i> - \r\n                                          STOLEN</li> <li><i>100</i> - \r\n                                          SAMPLE</li> </ul>",
+        "format": "int32"
+      },
+      "KNDDBModel.TTProductBox.StatesEnum": {
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "type": "integer",
+        "description": "<p>Members:</p><ul><li><i>1</i> - \r\n                                          Production</li> <li><i>2</i> - \r\n                                          Import</li> <li><i>3</i> - \r\n                                          Sales</li> <li><i>4</i> - \r\n                                          Deactivation</li> <li><i>5</i> - \r\n                                          Export</li> <li><i>6</i> - \r\n                                          Sales Return</li> <li><i>7</i> - \r\n                                          Purchase Confirmation</li> <li><i>8</i> - \r\n                                          Sales Cancelled</li> <li><i>9</i> - \r\n                                          Transfer Initiated</li> <li><i>10</i> - \r\n                                          Transfer Accepted</li> <li><i>11</i> - \r\n                                          Transfer Cancelled</li> <li><i>12</i> - \r\n                                          Partial Sales</li> <li><i>13</i> - \r\n                                          Stock</li> <li><i>14</i> - \r\n                                          Return Transfer Initiated</li> <li><i>15</i> - \r\n                                          Return Transfer Accepted</li> <li><i>16</i> - \r\n                                          Return Transfer Cancelled</li> <li><i>17</i> - \r\n                                          Partial Sales Cancelled</li> <li><i>18</i> - \r\n                                          Deactivation Cancelled</li> </ul>",
+        "format": "int32"
+      },
+      "KNDDBModel.TTProductBox.StatusEnum": {
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "description": "<p>Members:</p><ul><li><i>1</i> - \r\n                                          InStock</li> <li><i>2</i> - \r\n                                          StockOut</li> <li><i>3</i> - \r\n                                          InTransfer</li> </ul>",
+        "format": "int32"
+      },
+      "KNDDBModel.TTStakeholder.StakeholderType": {
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "type": "integer",
+        "description": "<p>Members:</p><ul><li><i>1</i> - \r\n                                          Producer</li> <li><i>2</i> - \r\n                                          Importer</li> <li><i>3</i> - \r\n                                          Company</li> <li><i>4</i> - \r\n                                          Manufacturer</li> <li><i>5</i> - \r\n                                          Pharmacy</li> <li><i>6</i> - \r\n                                          MedicalOrganization</li> <li><i>7</i> - \r\n                                          Warehouse</li> </ul>",
+        "format": "int32"
+      },
+      "KNDDBModel.TTTransferDeclaration.TransferStates": {
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "description": "<p>Members:</p><ul><li><i>1</i> - \r\n                                          Initiated</li> <li><i>2</i> - \r\n                                          Accepted</li> <li><i>3</i> - \r\n                                          Cancelled</li> </ul>",
+        "format": "int32"
+      },
+      "KNDDBModel.TTTransferDeclaration.TransferTypes": {
+        "enum": [
+          1,
+          2
+        ],
+        "type": "integer",
+        "description": "<p>Members:</p><ul><li><i>1</i> - \r\n                                          Initiate</li> <li><i>2</i> - \r\n                                          Accept</li> </ul>",
+        "format": "int32"
+      },
+      "Microsoft.AspNetCore.Mvc.ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      }
+    },
+    "securitySchemes": {
+      "oauth": {
+        "type": "openIdConnect",
+        "openIdConnectUrl": "/.well-known/openid-configuration"
+      }
+    }
+  },
+  "security": [
+    {
+      "oauth": [
+        "api"
+      ]
+    }
+  ]
+}

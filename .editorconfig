@@ -1,0 +1,86 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,xml,csproj,props,targets}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# ---------------------------------------------------------------------------
+# Стили кода C#
+# ---------------------------------------------------------------------------
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_expression_bodied_methods = when_on_single_line:silent
+csharp_prefer_braces = true:silent
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_sort_system_directives_first = true
+dotnet_diagnostic.IDE0005.severity = warning
+
+# ---------------------------------------------------------------------------
+# Анализаторы
+#
+# SDK сознательно оставляет строгими:
+#   * ошибки компилятора;
+#   * анализаторы AOT/trimming (IL2xxx, IL3xxx, SYSLIB1xxx);
+#   * правила корректности использования API (CA2xxx и часть CA1xxx).
+#
+# Правила «стиля» и микрооптимизаций ниже понижены до suggestion: они не влияют
+# на корректность библиотеки, но делают сборку зависимой от версии анализаторов.
+# ---------------------------------------------------------------------------
+dotnet_analyzer_diagnostic.category-Style.severity = suggestion
+
+# Именование «Get/Set» в интерфейсах — намеренное: это C#-библиотека, и такие имена
+# привычны потребителям (CA1716 предупреждает о конфликте с ключевыми словами других языков).
+dotnet_diagnostic.CA1716.severity = none
+
+# Микрооптимизации производительности, не влияющие на поведение
+dotnet_diagnostic.CA1822.severity = suggestion
+dotnet_diagnostic.CA1859.severity = suggestion
+dotnet_diagnostic.CA1861.severity = suggestion
+dotnet_diagnostic.CA1863.severity = suggestion
+dotnet_diagnostic.CA1002.severity = suggestion
+
+# Логирование: используются обычные вызовы ILogger осознанно,
+# исходники LoggerMessage не добавляются, чтобы не усложнять библиотеку.
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+
+# Локализация форматирования: SDK форматирует только технические значения
+# (пути, HTTP-статусы, идентификаторы), поэтому инвариантная культура не требуется везде.
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1303.severity = suggestion
+dotnet_diagnostic.CA1310.severity = suggestion
+
+# Порядок параметров: CancellationToken расположен рядом с логическим контекстом
+# внутреннего метода, что делает сигнатуру читаемее.
+dotnet_diagnostic.CA1068.severity = suggestion
+
+# Правила дизайна публичного API, которые для SDK избыточны
+dotnet_diagnostic.CA1034.severity = suggestion
+dotnet_diagnostic.CA1040.severity = suggestion
+dotnet_diagnostic.CA1054.severity = suggestion
+dotnet_diagnostic.CA1062.severity = suggestion
+dotnet_diagnostic.CA1724.severity = suggestion
+dotnet_diagnostic.CA1819.severity = suggestion
+dotnet_diagnostic.CA2225.severity = suggestion
+dotnet_diagnostic.CA2227.severity = suggestion
+dotnet_diagnostic.CA5394.severity = none
+
+# Документация: XML-комментарии обязательны для публичного API (см. GenerateDocumentationFile),
+# но внутренние типы их не требуют.
+dotnet_diagnostic.SA1600.severity = none
+
+[src/Knmdb.TrackAndTrace.Tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA2007.severity = none

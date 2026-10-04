@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Knmdb.TrackAndTrace/Knmdb.TrackAndTrace.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Knmdb.TrackAndTrace.Tests/Knmdb.TrackAndTrace.Tests.csproj" />
+  </Folder>
+</Solution>
