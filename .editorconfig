@@ -8,6 +8,12 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
+# Примечание о переводах строк.
+# Файлы в репозитории хранятся с LF (см. `.gitattributes`: `* text=auto`), а Git
+# нормализует их автоматически при коммите. Значение `end_of_line = crlf` выше задаёт
+# привычные переводы строк для рабочей копии на Windows и не влияет на то, что
+# попадает в репозиторий. При необходимости замените на `lf`.
+
 [*.{json,yml,yaml,xml,csproj,props,targets}]
 indent_size = 2
 

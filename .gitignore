@@ -1,8 +1,184 @@
-bin/
-obj/
-*.user
-.vs/
-.idea/
-.tools/
+# ============================================================================
+# .gitignore для Knmdb.TrackAndTrace
+#
+# Репозиторий содержит только исходный код, тесты и документацию.
+# Всё, что создаётся сборкой, восстанавливается пакетными менеджерами или
+# настраивается локально, в репозиторий не попадает.
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# Результаты сборки .NET
+# ---------------------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+build/
+bld/
+*.dll
+*.exe
+*.pdb
+*.mdb
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tlh
+*.tli
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.vsidx
+*.binlog
+*.buildlog
+
+# ---------------------------------------------------------------------------
+# Артефакты упаковки (результат `dotnet pack`, в репозитории не хранятся)
+# ---------------------------------------------------------------------------
+artifacts/
 *.nupkg
 *.snupkg
+*.nuspec
+
+# ---------------------------------------------------------------------------
+# Пакеты и восстановленные зависимости
+# ---------------------------------------------------------------------------
+packages/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+.fallback/
+# NuGet.config намеренно НЕ игнорируется: он нужен для воспроизводимой сборки
+# (в частности в CI). Если у вас в нём появились локальные источники с токенами —
+# используйте переменные окружения или добавьте строку `NuGet.config` ниже.
+# NuGet.config
+
+# ---------------------------------------------------------------------------
+# Тесты, покрытие, бенчмарки
+# ---------------------------------------------------------------------------
+[Tt]est[Rr]esult*/
+TestResults/
+[Tt]est[Rr]esult*.trx
+*.coverage
+*.coveragexml
+*.cobertura.xml
+coverage*.json
+coverage*.xml
+coverage*.info
+BenchmarkDotNet.Artifacts/
+*.received.*
+*.verified.*.received.*
+
+# ---------------------------------------------------------------------------
+# Секреты и локальные настройки
+# Никогда не коммитим реальные логины, пароли и токены KNMDB.
+# ---------------------------------------------------------------------------
+appsettings.Development.local.json
+appsettings.*.local.json
+*.local.json
+secrets.json
+*.pfx
+*.p12
+*.snk
+*.key
+*.pem
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------------------
+# Среды разработки
+# ---------------------------------------------------------------------------
+# Visual Studio / Rider
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.DotSettings.user
+.idea/
+*.sln.iml
+*.slnx.bak
+# MonoDevelop / Xamarin Studio
+*.pidb
+*.userprefs
+# ReSharper / dotCover
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings
+_TeamCity*
+# NCrunch
+*.ncrunch*
+*.*crunch*.local.xml
+# DevExpress
+*.DX*
+# Rider / JetBrains
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/shelf/
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+# MSBuild
+*.props.tmp
+*.targets.tmp
+# Общие локальные настройки инструментов
+.tools/
+.tool/
+.tmp/
+scratch/
+*.log.txt
+
+# ---------------------------------------------------------------------------
+# Операционные системы
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*~
+
+# ---------------------------------------------------------------------------
+# Временные файлы утилит
+# ---------------------------------------------------------------------------
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+*.temp
+*.~*
