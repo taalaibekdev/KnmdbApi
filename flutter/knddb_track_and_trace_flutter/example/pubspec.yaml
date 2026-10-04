@@ -1,0 +1,27 @@
+name: knddb_track_and_trace_flutter_example
+description: Пример приложения Flutter с KNMDB Track and Trace — вход и проверка лекарства по QR-коду.
+version: 1.0.1
+publish_to: none
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Версия подставляется из dependency_overrides ниже.
+  knddb_track_and_trace: any
+  knddb_track_and_trace_flutter:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+# Базовый пакет берём локально, пока он не опубликован на pub.dev.
+dependency_overrides:
+  knddb_track_and_trace:
+    path: ../../../dart/knddb_track_and_trace
+

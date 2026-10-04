@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="true" PackagePath="\" />
     <None Include="$(MSBuildThisFileDirectory)..\..\docs\*.md" Pack="true" PackagePath="docs\" />
     <EmbeddedResource Include="OpenApi\knddb-track-and-trace-v1.json" LogicalName="Knmdb.TrackAndTrace.OpenApi.knddb-track-and-trace-v1.json" />
   </ItemGroup>

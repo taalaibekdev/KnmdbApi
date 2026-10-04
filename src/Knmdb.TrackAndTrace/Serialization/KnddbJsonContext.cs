@@ -32,6 +32,7 @@ namespace Knmdb.TrackAndTrace.Serialization;
     WriteIndented = false)]
 [JsonSerializable(typeof(TokenResponse))]
 [JsonSerializable(typeof(ApiProblemDetails))]
+[JsonSerializable(typeof(KnddbActionResultEnvelope))]
 [JsonSerializable(typeof(GetAllStakeholdersResponse))]
 // Устаревший контракт: оставлен для совместимости, пока метод GetSupportedQRTypesAsync не удалён из API.
 [JsonSerializable(typeof(GetSupportedQRTypesResponse))]

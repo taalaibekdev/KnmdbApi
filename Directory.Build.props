@@ -21,7 +21,7 @@
 
   <!-- Метаданные NuGet-пакетов -->
   <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>KNMDB</Authors>
     <Company>KNMDB</Company>
     <Product>KNMDB Track and Trace API SDK</Product>

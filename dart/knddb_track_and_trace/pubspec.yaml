@@ -1,0 +1,28 @@
+name: knddb_track_and_trace
+description: >-
+  Dart/Flutter SDK для Track and Trace API системы KNMDB / KNDDB
+  (Кыргызская национальная база лекарственных средств): OAuth2-аутентификация,
+  автопродление токена, смена пользователя «на ходу», все методы API
+  и типизированные модели.
+version: 1.0.1
+repository: https://github.com/taalaibekdev/KnmdbApi
+issue_tracker: https://github.com/taalaibekdev/KnmdbApi/issues
+homepage: https://github.com/taalaibekdev/KnmdbApi/tree/main/dart/knddb_track_and_trace
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  http: ^1.2.0
+  meta: ^1.15.0
+
+dev_dependencies:
+  lints: ^5.1.0
+  test: ^1.25.0
+
+topics:
+  - api
+  - sdk
+  - medicine
+  - track-and-trace
+  - knmdb

@@ -80,9 +80,86 @@ public class KnddbApiException : Exception
     public IReadOnlyDictionary<string, string>? Errors { get; init; }
 
     /// <summary>
+    /// Код результата (<c>resultCode</c>) из конверта ответа KNMDB.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Ключевое свойство для ошибок бизнес-логики.</b> Сервер KNMDB отвечает
+    /// конвертом <c>{ resultCode, resultMessage, actionResult }</c> и при ошибке
+    /// бизнес-логики оставляет HTTP-статус <c>200 OK</c>. Отличить успех от ошибки
+    /// по <see cref="StatusCode"/> невозможно — проверяйте это свойство.
+    /// </para>
+    /// <para>
+    /// Значение <c>null</c> означает, что конверта в ответе не было: ошибку вернул
+    /// уровень ASP.NET Core (проверка модели, отсутствие прав, необработанное
+    /// исключение) — тогда ориентируйтесь на <see cref="StatusCode"/> и
+    /// <see cref="ProblemDetails"/>.
+    /// </para>
+    /// <para>
+    /// Расшифровка известных кодов — в <see cref="KnddbResultCodes"/>.
+    /// </para>
+    /// </remarks>
+    public int? ResultCode { get; init; }
+
+    /// <summary>
+    /// Сообщение сервера (<c>resultMessage</c>) из конверта ответа.
+    /// </summary>
+    /// <remarks>
+    /// Как правило на английском языке, например
+    /// <c>Product with QRCode 0104… not found</c>. Готовое русское пояснение
+    /// возвращает <see cref="GetResultDescription"/>.
+    /// </remarks>
+    public string? ResultMessage { get; init; }
+
+    /// <summary>
+    /// Признак ошибки бизнес-логики: сервер вернул конверт с ненулевым
+    /// <see cref="ResultCode"/>.
+    /// </summary>
+    /// <remarks>
+    /// Такие ошибки приходят с HTTP-статусом 200, поэтому проверка
+    /// <see cref="StatusCode"/> их не выявляет.
+    /// </remarks>
+    public bool IsBusinessError => ResultCode is not null and not KnddbResultCodes.Success;
+
+    /// <summary>
+    /// Возвращает пояснение причины на русском языке.
+    /// </summary>
+    /// <returns>
+    /// Расшифровку <see cref="ResultCode"/> из <see cref="KnddbResultCodes.Describe"/>,
+    /// либо <see cref="ResultMessage"/> от сервера, либо <see langword="null"/>.
+    /// </returns>
+    public string? GetResultDescription()
+        => KnddbResultCodes.Describe(ResultCode) ?? ResultMessage;
+
+    /// <summary>
     /// Признак того, что упаковка/сущность не найдена (HTTP 404).
     /// </summary>
     public bool IsNotFound => StatusCode == HttpStatusCode.NotFound;
+
+    /// <summary>
+    /// Признак того, что упаковка не найдена — по HTTP-статусу (404) либо
+    /// по коду результата <see cref="KnddbResultCodes.ProductWithQrCodeNotFound"/>
+    /// или <see cref="KnddbResultCodes.ProductWithSerialNumberNotFound"/>.
+    /// </summary>
+    /// <remarks>
+    /// Удобно для проверки лекарственного средства и для операций с упаковками:
+    /// сервер сообщает «не найдено» и через HTTP 404, и через код 6022/6039
+    /// в конверте с HTTP 200.
+    /// </remarks>
+    public bool IsProductNotFound
+        => IsNotFound
+           || ResultCode == KnddbResultCodes.ProductWithQrCodeNotFound
+           || ResultCode == KnddbResultCodes.ProductWithSerialNumberNotFound;
+
+    /// <summary>
+    /// Признак того, что упаковка не подходит для продажи
+    /// (<see cref="KnddbResultCodes.ProductWithQrCodeNotSuitableForSale"/>).
+    /// </summary>
+    /// <remarks>
+    /// Самая частая причина — повторная продажа уже проданной упаковки.
+    /// </remarks>
+    public bool IsProductNotSuitableForSale
+        => ResultCode == KnddbResultCodes.ProductWithQrCodeNotSuitableForSale;
 
     /// <summary>
     /// Признак проблемы с авторизацией: HTTP 401 или 403.
@@ -109,14 +186,35 @@ public class KnddbApiException : Exception
     /// <inheritdoc />
     public override string ToString()
     {
-        var baseText = base.ToString();
-        if (Errors is null || Errors.Count == 0)
+        var builder = new System.Text.StringBuilder(base.ToString());
+
+        if (ResultCode is not null)
         {
-            return TraceId is null ? baseText : $"{baseText}{Environment.NewLine}TraceId: {TraceId}";
+            builder.Append(Environment.NewLine).Append("resultCode: ").Append(ResultCode.Value);
+
+            var description = GetResultDescription();
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                builder.Append(" — ").Append(description);
+            }
         }
 
-        var details = string.Join(Environment.NewLine, Errors.Select(e => $"  - {e.Key}: {e.Value}"));
-        return $"{baseText}{Environment.NewLine}Ошибки валидации:{Environment.NewLine}{details}";
+        if (TraceId is not null)
+        {
+            builder.Append(Environment.NewLine).Append("TraceId: ").Append(TraceId);
+        }
+
+        if (Errors is { Count: > 0 })
+        {
+            builder.Append(Environment.NewLine).Append("Ошибки валидации:");
+            foreach (var pair in Errors)
+            {
+                builder.Append(Environment.NewLine)
+                    .Append("  - ").Append(pair.Key).Append(": ").Append(pair.Value);
+            }
+        }
+
+        return builder.ToString();
     }
 }
 

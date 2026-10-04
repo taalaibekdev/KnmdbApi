@@ -80,9 +80,138 @@ internal sealed class KnddbTransport
                     return default;
                 }
 
-                await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-                return await JsonSerializer.DeserializeAsync(stream, responseTypeInfo, token).ConfigureAwait(false);
+                // Тело читается целиком, а не потоком: сервер KNMDB оборачивает ответ
+                // в конверт { resultCode, resultMessage, actionResult }, и чтобы
+                // проверить resultCode, содержимое нужно разобрать один раз.
+                var body = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+
+                var payload = UnwrapEnvelope(body, method, path);
+
+                if (payload is null)
+                {
+                    return default;
+                }
+
+                try
+                {
+                    return payload.Value.Deserialize(responseTypeInfo);
+                }
+                catch (JsonException exception)
+                {
+                    throw new KnddbApiException(
+                        $"Не удалось разобрать ответ {method.Method} {path}. "
+                        + "Вероятно, сервер вернул данные в неожиданном формате.",
+                        exception)
+                    {
+                        Method = method.Method,
+                        RequestUri = path,
+                        StatusCode = response.StatusCode,
+                        ResponseBody = body,
+                        TraceId = GetTraceId(response),
+                    };
+                }
             }).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Разбирает конверт ответа KNMDB и возвращает полезную нагрузку метода.
+    /// </summary>
+    /// <param name="body">Тело ответа.</param>
+    /// <param name="method">HTTP-метод (для сообщений об ошибках).</param>
+    /// <param name="path">Путь запроса (для сообщений об ошибках).</param>
+    /// <returns>Полезная нагрузка либо <see langword="null"/>, если конверт пуст.</returns>
+    /// <exception cref="KnddbApiException">
+    /// Конверт содержит ненулевой <c>resultCode</c> — это ошибка бизнес-логики,
+    /// пришедшая с HTTP-статусом 200.
+    /// </exception>
+    /// <remarks>
+    /// Сервер KNMDB оборачивает в конверт все ответы Track and Trace, поэтому
+    /// результат метода всегда лежит в поле <c>actionResult</c>, а признак успеха —
+    /// в <c>resultCode</c> (0 — успех).
+    /// Если конверта в теле нет (например, ответ вернул промежуточный слой),
+    /// тело возвращается как есть.
+    /// </remarks>
+    private static JsonElement? UnwrapEnvelope(string body, HttpMethod method, string path)
+    {
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return null;
+        }
+
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(body);
+        }
+        catch (JsonException exception)
+        {
+            throw new KnddbApiException(
+                $"Не удалось разобрать ответ {method.Method} {path}: тело не является корректным JSON.",
+                exception)
+            {
+                Method = method.Method,
+                RequestUri = path,
+                ResponseBody = body,
+            };
+        }
+
+        using (document)
+        {
+            var root = document.RootElement;
+
+            if (root.ValueKind != JsonValueKind.Object
+                || !root.TryGetProperty("resultCode", out var resultCodeElement)
+                || !resultCodeElement.TryGetInt32(out var resultCode))
+            {
+                return root.Clone();
+            }
+
+            var resultMessage = root.TryGetProperty("resultMessage", out var messageElement)
+                && messageElement.ValueKind == JsonValueKind.String
+                    ? messageElement.GetString()
+                    : null;
+
+            if (resultCode != KnddbResultCodes.Success)
+            {
+                throw CreateBusinessException(resultCode, resultMessage, method, path, body);
+            }
+
+            if (!root.TryGetProperty("actionResult", out var actionResult)
+                || actionResult.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return actionResult.Clone();
+        }
+    }
+
+    private static KnddbApiException CreateBusinessException(
+        int resultCode,
+        string? resultMessage,
+        HttpMethod method,
+        string path,
+        string body)
+    {
+        var description = KnddbResultCodes.Describe(resultCode);
+        var message = description ?? resultMessage ?? "Сервер KNMDB сообщил об ошибке.";
+
+        if (description is not null && !string.IsNullOrWhiteSpace(resultMessage))
+        {
+            message = $"{description} Ответ сервера: {resultMessage}";
+        }
+
+        // Ошибка бизнес-логики приходит с HTTP 200, поэтому по статусу её не отличить:
+        // признак ошибки — resultCode.
+        return new KnddbApiException(message)
+        {
+            Method = method.Method,
+            RequestUri = path,
+            StatusCode = HttpStatusCode.OK,
+            ResponseBody = body,
+            ResultCode = resultCode,
+            ResultMessage = resultMessage,
+        };
     }
 
     /// <summary>

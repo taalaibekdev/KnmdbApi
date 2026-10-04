@@ -41,6 +41,7 @@ internal sealed class RecordingHttpMessageHandler : HttpMessageHandler
             Authorization = request.Headers.Authorization?.ToString(),
             Body = body,
             ContentType = request.Content?.Headers.ContentType?.ToString(),
+            UserAgent = request.Headers.UserAgent.ToString(),
         });
 
         return _responder(request, index);
@@ -58,6 +59,53 @@ internal sealed class RecordingHttpMessageHandler : HttpMessageHandler
     public static HttpResponseMessage FromObject<T>(HttpStatusCode statusCode, T value)
         => Json(statusCode, JsonSerializer.Serialize(value, KnddbJson.DefaultOptions));
 
+    /// <summary>
+    /// Отдаёт успешный ответ в конверте KNMDB:
+    /// <c>{ "resultCode": 0, "resultMessage": "...", "actionResult": {...} }</c>.
+    /// </summary>
+    /// <param name="payload">
+    /// Полезная нагрузка метода в виде готового JSON-фрагмента, например
+    /// <c>"""{ "numberOfStakeholders": 0 }"""</c>.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// Именно так отвечает настоящий сервер: фильтр <c>ActionResultFilterAttribute</c>
+    /// оборачивает результат каждого метода Track and Trace в этот конверт.
+    /// </para>
+    /// <para>
+    /// Принимается строка, а не объект: сериализация идёт через источник-генератор
+    /// <c>KnddbJsonContext</c>, которому анонимные типы недоступны.
+    /// </para>
+    /// </remarks>
+    public static HttpResponseMessage Envelope(string payload)
+        => Json(
+            HttpStatusCode.OK,
+            $$"""
+            {
+              "resultCode": 0,
+              "resultMessage": "Action completed successfully.",
+              "actionResult": {{payload}}
+            }
+            """);
+
+    /// <summary>
+    /// Отдаёт ошибку бизнес-логики в конверте с HTTP-статусом 200.
+    /// </summary>
+    /// <remarks>
+    /// Настоящий сервер так отвечает на <c>KNDDBBusinessException</c>: статус
+    /// остаётся 200, а причина передаётся кодом <paramref name="resultCode"/>.
+    /// </remarks>
+    public static HttpResponseMessage EnvelopeError(int resultCode, string resultMessage)
+        => Json(
+            HttpStatusCode.OK,
+            $$"""
+            {
+              "resultCode": {{resultCode}},
+              "resultMessage": {{JsonSerializer.Serialize(resultMessage)}},
+              "actionResult": null
+            }
+            """);
+
     public static HttpResponseMessage Empty(HttpStatusCode statusCode) => new(statusCode);
 }
 
@@ -73,6 +121,9 @@ internal sealed class RecordedRequest
     public string? Body { get; init; }
 
     public string? ContentType { get; init; }
+
+    /// <summary>Заголовок <c>User-Agent</c>.</summary>
+    public string? UserAgent { get; init; }
 
     public string Path => RequestUri?.AbsolutePath ?? string.Empty;
 

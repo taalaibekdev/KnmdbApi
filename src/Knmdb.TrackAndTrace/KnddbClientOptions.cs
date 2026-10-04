@@ -56,6 +56,46 @@ public enum KnddbEnvironment
 /// </remarks>
 public sealed class KnddbClientOptions
 {
+    /// <summary>
+    /// Пользовательский агент по умолчанию.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Сервер KNMDB записывает заголовок <c>User-Agent</c> в базу данных при входе.
+    /// Если заголовок не передан, запись завершается ошибкой:
+    /// <c>resultCode 2</c> («An error occurred while saving the entity changes»).
+    /// Поэтому SDK отправляет этот заголовок всегда — даже если приложение его не задало.
+    /// </para>
+    /// <para>
+    /// Своё значение задавайте через <see cref="UserAgent"/>: полезно указывать название
+    /// и версию приложения, чтобы администратор KNMDB мог отличить интеграции в журналах.
+    /// </para>
+    /// </remarks>
+    public const string DefaultUserAgent = "Knmdb.TrackAndTrace.SDK/1.0";
+
+    /// <summary>
+    /// Область доступа (scope) OAuth 2.0 по умолчанию: <c>api</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Сервер KNMDB регистрирует только область <c>api</c>
+    /// (<c>options.RegisterScopes("api")</c> в конфигурации OpenIddict).
+    /// </para>
+    /// <para>
+    /// <b>Не добавляйте <c>offline_access</c>.</b> В OpenIddict эта область
+    /// разрешена только при включённом потоке обновления токена
+    /// (<c>AllowRefreshTokenFlow()</c>). Сервер KNMDB его не включает, поэтому
+    /// запрос с <c>offline_access</c> отклоняется целиком:
+    /// <c>invalid_request</c> — «The 'offline_access' scope is not allowed»,
+    /// и вход становится невозможным.
+    /// </para>
+    /// <para>
+    /// Своё значение задавайте через <see cref="Scope"/>, если конфигурация
+    /// вашего сервера отличается.
+    /// </para>
+    /// </remarks>
+    public const string DefaultScope = "api";
+
     /// <summary>Имя раздела конфигурации по умолчанию: <c>Knddb</c>.</summary>
     public const string DefaultSectionName = "Knddb";
 
@@ -101,7 +141,31 @@ public sealed class KnddbClientOptions
     /// <summary>
     /// Пользовательский агент в заголовке <c>User-Agent</c> (необязательно).
     /// </summary>
+    /// <remarks>
+    /// Если не задан, отправляется <see cref="DefaultUserAgent"/>. Заголовок
+    /// отправляется всегда: без него сервер KNMDB не может сохранить запись
+    /// о входе (см. <see cref="DefaultUserAgent"/>).
+    /// </remarks>
     public string? UserAgent { get; set; }
+
+    /// <summary>
+    /// Область доступа (scope) OAuth 2.0, запрашиваемая при входе.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// По умолчанию — <see cref="DefaultScope"/> (<c>api</c>).
+    /// </para>
+    /// <para>
+    /// Меняйте только если конфигурация вашего сервера KNMDB отличается.
+    /// Значение <c>offline_access</c> приведёт к отказу входа, если на сервере
+    /// не включён поток обновления токена.
+    /// </para>
+    /// <para>
+    /// Пустая строка означает «не передавать параметр <c>scope</c>» — тогда
+    /// сервер использует области по умолчанию.
+    /// </para>
+    /// </remarks>
+    public string? Scope { get; set; }
 
     /// <summary>
     /// Запас времени до истечения токена, при котором он обновляется заранее.
@@ -260,10 +324,11 @@ public sealed class KnddbClientOptions
         client.BaseAddress = Validate();
         client.Timeout = Timeout;
 
-        if (!string.IsNullOrWhiteSpace(UserAgent))
-        {
-            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent);
-        }
+        // Заголовок User-Agent отправляется всегда: без него сервер KNMDB
+        // не может сохранить запись о входе (resultCode 2).
+        client.DefaultRequestHeaders.TryAddWithoutValidation(
+            "User-Agent",
+            string.IsNullOrWhiteSpace(UserAgent) ? DefaultUserAgent : UserAgent);
 
         return client;
     }
@@ -285,12 +350,21 @@ public sealed class KnddbClientOptions
     /// Добавляет к запросу заголовки, заданные в настройках.
     /// </summary>
     /// <param name="request">Формируемый запрос.</param>
+    /// <remarks>
+    /// Заголовок <c>User-Agent</c> подставляется всегда. Без него сервер KNMDB
+    /// не может сохранить запись о входе и отвечает кодом результата 2 —
+    /// «An error occurred while saving the entity changes».
+    /// </remarks>
     internal void ApplyHeaders(HttpRequestMessage request)
     {
-        if (!string.IsNullOrWhiteSpace(UserAgent) && !request.Headers.Contains("User-Agent"))
+        if (request.Headers.Contains("User-Agent"))
         {
-            request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+            return;
         }
+
+        request.Headers.TryAddWithoutValidation(
+            "User-Agent",
+            string.IsNullOrWhiteSpace(UserAgent) ? DefaultUserAgent : UserAgent);
     }
 
     /// <summary>
@@ -302,10 +376,11 @@ public sealed class KnddbClientOptions
         client.BaseAddress = Validate();
         client.Timeout = Timeout;
 
-        if (!string.IsNullOrWhiteSpace(UserAgent))
-        {
-            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent);
-        }
+        // Заголовок User-Agent отправляется всегда: без него сервер KNMDB
+        // не может сохранить запись о входе (resultCode 2).
+        client.DefaultRequestHeaders.TryAddWithoutValidation(
+            "User-Agent",
+            string.IsNullOrWhiteSpace(UserAgent) ? DefaultUserAgent : UserAgent);
 
         if (client.DefaultRequestHeaders.AcceptEncoding.Count == 0)
         {

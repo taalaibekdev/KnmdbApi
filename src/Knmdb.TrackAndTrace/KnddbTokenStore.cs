@@ -68,13 +68,7 @@ internal sealed class KnddbTokenStore
         try
         {
             var response = await RequestTokenAsync(
-                new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    ["grant_type"] = "password",
-                    ["username"] = effective.UserName,
-                    ["password"] = effective.Password,
-                    ["scope"] = "api offline_access",
-                },
+                BuildPasswordGrant(effective),
                 sessionKey,
                 cancellationToken).ConfigureAwait(false);
 
@@ -226,13 +220,7 @@ internal sealed class KnddbTokenStore
         }
 
         var response = await RequestTokenAsync(
-            new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["grant_type"] = "password",
-                ["username"] = credentials.UserName,
-                ["password"] = credentials.Password,
-                ["scope"] = "api offline_access",
-            },
+            BuildPasswordGrant(credentials),
             session.Key,
             cancellationToken).ConfigureAwait(false);
 
@@ -241,6 +229,53 @@ internal sealed class KnddbTokenStore
         session.ApplyTokenResponse(response);
 
         return session;
+    }
+
+    /// <summary>
+    /// Формирует тело запроса токена для потока «логин и пароль».
+    /// </summary>
+    /// <param name="credentials">Учётные данные.</param>
+    /// <returns>Поля формы запроса.</returns>
+    /// <remarks>
+    /// Параметр <c>scope</c> добавляется, только если он задан явно.
+    /// Пустое значение <see cref="KnddbClientOptions.Scope"/> означает
+    /// «использовать области сервера по умолчанию».
+    /// </remarks>
+    private Dictionary<string, string> BuildPasswordGrant(Models.Auth.KnddbCredentials credentials)
+    {
+        var form = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["grant_type"] = "password",
+            ["username"] = credentials.UserName,
+            ["password"] = credentials.Password,
+        };
+
+        var scope = ResolveScope();
+        if (!string.IsNullOrWhiteSpace(scope))
+        {
+            form["scope"] = scope;
+        }
+
+        return form;
+    }
+
+    /// <summary>
+    /// Возвращает область доступа (scope) для запроса токена.
+    /// </summary>
+    /// <returns>
+    /// Значение <see cref="KnddbClientOptions.Scope"/> либо
+    /// <see cref="KnddbClientOptions.DefaultScope"/>, если оно не задано.
+    /// </returns>
+    /// <remarks>
+    /// Область <c>offline_access</c> не добавляется: сервер KNMDB её не
+    /// регистрирует, и запрос с ней отклоняется целиком — вход становится
+    /// невозможным.
+    /// </remarks>
+    private string ResolveScope()
+    {
+        var scope = _optionsProvider().Scope;
+
+        return scope ?? KnddbClientOptions.DefaultScope;
     }
 
     private Models.Auth.KnddbCredentials ResolveCredentials(
@@ -325,6 +360,16 @@ internal sealed class KnddbTokenStore
                 throw CreateAuthenticationException(response.StatusCode, body, sessionKey);
             }
 
+            // Сервер может ответить кодом 200 и конвертом с ошибкой: обработчик
+            // исключений KNMDB возвращает статус 200 даже для внутренних сбоев.
+            // Без этой проверки пользователь увидел бы невнятное «сервер не вернул
+            // поле access_token» вместо настоящей причины.
+            var envelope = TryReadErrorEnvelope(body);
+            if (envelope is not null)
+            {
+                throw CreateEnvelopeException(envelope.Value, sessionKey, body);
+            }
+
             try
             {
                 return JsonSerializer.Deserialize(body, KnddbJson.TypeInfo<Models.Auth.TokenResponse>())
@@ -380,6 +425,89 @@ internal sealed class KnddbTokenStore
             ResponseBody = body,
             SessionKey = sessionKey,
             OAuthError = error,
+        };
+    }
+
+    /// <summary>
+    /// Пытается прочитать конверт KNMDB с ошибкой из тела успешного ответа.
+    /// </summary>
+    /// <param name="body">Тело ответа.</param>
+    /// <returns>
+    /// Код и сообщение ошибки либо <see langword="null"/>, если конверта нет
+    /// или он сообщает об успехе.
+    /// </returns>
+    /// <remarks>
+    /// Обработчик исключений KNMDB отвечает статусом 200 и телом
+    /// <c>{ "resultCode": …, "resultMessage": … }</c> даже при внутреннем сбое,
+    /// в том числе на <c>/connect/token</c>.
+    /// </remarks>
+    private static (int Code, string? Message)? TryReadErrorEnvelope(string body)
+    {
+        if (string.IsNullOrWhiteSpace(body) || !body.TrimStart().StartsWith('{'))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            var root = document.RootElement;
+
+            if (root.ValueKind != JsonValueKind.Object
+                || !root.TryGetProperty("resultCode", out var codeElement)
+                || !codeElement.TryGetInt32(out var code)
+                || code == KnddbResultCodes.Success)
+            {
+                return null;
+            }
+
+            var message = root.TryGetProperty("resultMessage", out var messageElement)
+                && messageElement.ValueKind == JsonValueKind.String
+                    ? messageElement.GetString()
+                    : null;
+
+            return (code, message);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static KnddbAuthenticationException CreateEnvelopeException(
+        (int Code, string? Message) envelope,
+        string sessionKey,
+        string body)
+    {
+        var description = KnddbResultCodes.Describe(envelope.Code);
+
+        var message = $"Сервер KNMDB не выполнил вход (resultCode {envelope.Code}).";
+
+        if (description is not null)
+        {
+            message = $"{message} {description}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(envelope.Message))
+        {
+            message = $"{message} Ответ сервера: {envelope.Message}";
+        }
+
+        if (envelope.Code == KnddbResultCodes.UnexpectedError)
+        {
+            message += " Вероятная причина — несовместимость запроса с сервером: "
+                     + "проверьте заголовок User-Agent и формат дат.";
+        }
+
+        return new KnddbAuthenticationException(message)
+        {
+            Method = "POST",
+            RequestUri = "/" + TokenPath,
+            StatusCode = HttpStatusCode.OK,
+            ResponseBody = body,
+            ResultCode = envelope.Code,
+            ResultMessage = envelope.Message,
+            SessionKey = sessionKey,
         };
     }
 

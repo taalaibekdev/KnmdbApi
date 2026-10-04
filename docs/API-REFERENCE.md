@@ -24,11 +24,13 @@
 
 | Правило | Описание |
 |---|---|
-| **Формат дат** | Поля-даты передаются как `yyyy-MM-dd` (SDK делает это автоматически через конвертер). Не переопределяйте сериализацию. |
+| **Формат ответа** | Все методы Track and Trace возвращают результат в конверте `{ resultCode, resultMessage, actionResult }` — см. [Конверт ответа](#конверт-ответа-и-коды-результата). SDK разбирает его автоматически. |
+| **Формат дат** | Поля-даты передаются как `yyyy-MM-dd` **без времени**. Значение с временем (`2026-03-15T12:00:00Z`) сервер отклоняет с кодом результата 2. SDK отбрасывает время автоматически. |
+| **Заголовок `User-Agent`** | Обязателен: сервер записывает его в базу при входе. Без заголовка вход падает с кодом результата 2. SDK отправляет его всегда — см. [Заголовок User-Agent](#заголовок-user-agent). |
 | **Формат перечислений** | Числа. При чтении SDK дополнительно принимает строки — см. [ENUMS.md](ENUMS.md). |
 | **Имена полей** | `camelCase` (SDK настраивает автоматически). |
-| **Пустой ответ** | Метод возвращает `null`, если сервер вернул пустое тело. |
-| **Ошибка** | Выбрасывается `KnddbApiException` (см. [Исключения](#исключения)). |
+| **Пустой ответ** | Метод возвращает `null`, если сервер вернул пустое тело или `actionResult: null`. |
+| **Ошибка** | Выбрасывается `KnddbApiException` (см. [Исключения](#исключения)). **Ошибки бизнес-логики приходят с HTTP 200** — проверяйте `ResultCode`. |
 | **`CancellationToken`** | Последний параметр каждого метода. |
 | **Смена пользователя** | Каждый метод выполняется от имени текущей сессии — см. [Работа с сессиями](#работа-с-сессиями). |
 | **Права доступа** | Роли API настраиваются администратором департамента лекарственных средств через административную панель KNMDB. Отдельно запрашивать и проверять их не нужно. |
@@ -39,7 +41,239 @@
 
 ---
 
+## Конверт ответа и коды результата
+
+### Формат конверта
+
+Все методы Track and Trace отвечают одним и тем же конвертом:
+
+```json
+{
+  "resultCode": 0,
+  "resultMessage": "Action completed successfully.",
+  "actionResult": {
+    "declarationId": 15234,
+    "declarationDate": "2026-03-15T00:00:00"
+  }
+}
+```
+
+| Поле | Тип | Описание |
+|---|---|---|
+| `resultCode` | `int` | **Код результата.** `0` — успех, любое другое значение — ошибка. |
+| `resultMessage` | `string` | Сообщение сервера. При ошибке — описание причины, как правило на английском. |
+| `actionResult` | `object` | Полезная нагрузка метода. При ошибке — `null`. |
+
+Конверт добавляет фильтр `ActionResultFilterAttribute` сервера KNMDB: он
+заменяет результат каждого действия на `Ok(KNDDBActionResult)`. Поэтому данные
+метода лежат **не в корне JSON**, а в поле `actionResult`.
+
+### Главное: ошибки бизнес-логики приходят с HTTP 200
+
+Обработчик исключений сервера сериализует бизнес-исключение в **тот же конверт**
+и оставляет HTTP-статус **`200 OK`**:
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"resultCode":6023,"resultMessage":"Product with QRCode 0104… is not suitable for sale","actionResult":null}
+```
+
+**Отличить успех от ошибки по HTTP-статусу невозможно.** Признак ошибки —
+ненулевой `resultCode`. Это самая частая ловушка при самостоятельной интеграции:
+код, проверяющий только `response.IsSuccessStatusCode` / `response.ok`, считает
+такую ошибку успехом и получает пустой объект данных.
+
+SDK делает эту проверку за вас: при `resultCode != 0` выбрасывается
+`KnddbApiException` с заполненными `ResultCode` и `ResultMessage`.
+
+### Коды результата
+
+Общие коды:
+
+| Код | Константа SDK | Значение |
+|---|---|---|
+| `0` | `KnddbResultCodes.Success` | Успех. |
+| `1` | `KnddbResultCodes.ValidationError` | Ошибка проверки входных данных. |
+| `2` | `KnddbResultCodes.UnexpectedError` | Неожиданная ошибка сервера. |
+| `3` | — | Неожиданная ошибка (без подробностей). |
+
+Коды бизнес-логики Track and Trace:
+
+| Код | Константа SDK | Значение |
+|---|---|---|
+| `6003` | `SimilarQrCode` | В списке повторяющиеся QR-коды. |
+| `6004` | `SimilarQrCodeInDatabase` | QR-код уже зарегистрирован в системе. |
+| `6005` | `DifferentBatchNo` | В списке разные номера партий. |
+| `6006` | `DifferentExpirationDate` | В списке разные даты истечения срока годности. |
+| `6010` | `ProductionDateAfterDeclaration` | Дата производства позже даты декларации. |
+| `6012` | `NoSuitableProducts` | Нет препаратов, подходящих для операции. |
+| `6021` | `SerialNumbersAlreadyDeclared` | Серийные номера уже объявлены. |
+| **`6022`** | `ProductWithQrCodeNotFound` | **Упаковка с таким QR-кодом не найдена.** |
+| **`6023`** | `ProductWithQrCodeNotSuitableForSale` | **Упаковка не подходит для продажи** (чаще всего — повторная продажа уже проданной упаковки). |
+| `6024` | `QrCodeNotSuitableToModel` | QR-код не соответствует выбранной модели (типу). |
+| `6025` | `QrCodeGtinMismatch` | GTIN в QR-коде не совпадает с GTIN в запросе. |
+| `6026` | `QrCodeExpirationDateMismatch` | Дата годности в QR-коде не совпадает с датой в запросе. |
+| `6027` | `QrCodeBatchNumberMismatch` | Номер партии в QR-коде не совпадает с номером в запросе. |
+| `6028` | `MedicineNotSuitableForPartialSale` | Препарат не подлежит частичной продаже. |
+| `6029` | `PartialSaleAmountMustBePositive` | Количество при частичной продаже должно быть > 0. |
+| `6030` | `NotEnoughAmountForPartialSale` | Недостаточно препарата для частичной продажи. |
+| `6031` | `MustBePartiallySold` | Препарат должен продаваться частично. |
+| `6032` | `QrCodeCouldNotBeParsed` | QR-код не удалось разобрать. |
+| `6033` | `ProductAlreadyDeclared` | Упаковка уже объявлена ранее. |
+| `6034` | `DeclarationDoesntBelongToYou` | Декларация принадлежит другой организации. |
+| `6035` | `DeclarationCannotBeCancelled` | Декларацию нельзя отменить: позиции уже обработаны. |
+| `6036` | `QrCodeModelNotFound` | Модель QR-кода не найдена (проверьте `qrTypeId`). |
+| `6037` | `OrganizationIsNotTrackAndTraceStakeholder` | Организация не участник прослеживаемости. |
+| `6038` | `ImporterWithTaxNumberNotFound` | Импортёр с указанным ИНН не найден. |
+| `6039` | `ProductWithSerialNumberNotFound` | Пара «GTIN + серийный номер» не найдена. |
+| `6040` | `WarehouseDoesntBelongToYourOrganization` | Склад не принадлежит вашей организации. |
+| `6042` | `TransferDeclarationDetailsIsEmpty` | Список упаковок для перемещения пуст. |
+| `6043` | `DeactivateDeclarationProductsMustBeSame` | В деактивации должны быть упаковки одного препарата. |
+| `6044` | `DeactivateDeclarationDetailsIsEmpty` | Список упаковок для деактивации пуст. |
+| `6045` | `ProductCannotBeDeactivated` | Упаковку нельзя деактивировать: она продана. |
+| `6046` | `ProductAlreadySalesCancelled` | Продажа упаковки уже отменена. |
+| `6047` | `TransferDeclarationIsNotInitiated` | Перемещение уже не в состоянии «инициировано». |
+| `6048` | `QrCodeNonAsciiCharFound` | QR-код содержит недопустимые символы. |
+| `6049` | `QrCodeParseError` | Ошибка разбора QR-кода. |
+| `6050` | `ProductIsDeactivated` | Упаковка деактивирована. |
+| `6051` | `ProductIsNotDeactivated` | Упаковка не деактивирована. |
+| `6052` | `CitizenNumberTooLong` | Длина ПИН гражданина превышает 24 символа. |
+| `6100` | `PrescriptionNotFound` | Рецепт не найден. |
+| `6101` | `UserNationalIdentityNotFound` | У пользователя не заполнен ПИН. |
+| `6102` | `PharmacyLicenseNotFound` | Нет привязки к аптеке или номера лицензии. |
+| `6103` | `SalesDeclarationFailed` | Реализация по рецепту не удалась. |
+| `6104` | `SalesCancelDeclarationFailed` | Отмена реализации по рецепту не удалась. |
+| `6105` | `UserMustBelongPharmacy` | Пользователь должен быть привязан к аптеке. |
+| `6106` | `UserMustBelongPharmacyOrHospital` | Пользователь должен быть привязан к аптеке или больнице. |
+
+Полный список с русскими описаниями доступен в коде:
+`KnddbResultCodes.Describe(resultCode)` (.NET) / `KnddbResultCodes.describe(resultCode)` (Dart).
+
+### Как обрабатывать в коде
+
+```csharp
+try
+{
+    await client.SalesDeclarationAsync(request);
+}
+catch (KnddbApiException ex) when (ex.IsBusinessError)
+{
+    // Ошибка бизнес-логики: HTTP-статус 200, причина — в ResultCode.
+    switch (ex.ResultCode)
+    {
+        case KnddbResultCodes.ProductWithQrCodeNotFound:
+            // «Упаковка с таким QR-кодом не найдена в системе»
+            break;
+
+        case KnddbResultCodes.ProductWithQrCodeNotSuitableForSale:
+            // «Упаковка не подходит для продажи: возможно, она уже продана…»
+            break;
+
+        case KnddbResultCodes.DeclarationDoesntBelongToYou:
+            // Декларация другой организации
+            break;
+
+        default:
+            // Готовое русское описание, а если код неизвестен — сообщение сервера
+            logger.LogWarning("KNMDB {Code}: {Description}", ex.ResultCode, ex.GetResultDescription());
+            break;
+    }
+}
+```
+
+Готовые признаки в исключении:
+
+| Свойство | Что проверяет |
+|---|---|
+| `IsBusinessError` | Конверт с ненулевым `ResultCode` (пришёл с HTTP 200). |
+| `IsProductNotFound` | HTTP 404 **или** код 6022/6039 — удобно для проверки лекарства. |
+| `IsProductNotSuitableForSale` | Код 6023 — повторная продажа или непригодная упаковка. |
+| `ResultCode` | Код результата; `null`, если конверта в ответе не было. |
+| `ResultMessage` | Сообщение сервера (английское). |
+| `GetResultDescription()` | Русское описание кода, иначе `ResultMessage`. |
+
+> Если `ResultCode` равен `null`, ответ пришёл **не** от Track and Trace, а от
+> уровня ASP.NET Core: проверка модели (400), отсутствие прав (403),
+> необработанное исключение (500). В этом случае ориентируйтесь на `StatusCode`
+> и `ProblemDetails`.
+
+### Эндпоинт токена
+
+`POST /connect/token` обёрткой не покрыт, но обработчик исключений действует и
+там: при внутреннем сбое сервер отвечает **HTTP 200** и конвертом
+`{"resultCode": 2, "resultMessage": "…", "actionResult": null}`.
+
+SDK распознаёт этот случай и сообщает настоящую причину вместо невнятного
+«сервер не вернул поле `access_token`»:
+
+```text
+KnddbAuthenticationException: Сервер KNMDB не выполнил вход (resultCode 2).
+Внутренняя ошибка сервера KNMDB. Обратитесь в поддержку.
+Ответ сервера: Unexpected error(s) occurred: An error occurred while saving the entity changes.
+Вероятная причина — несовместимость запроса с сервером: проверьте заголовок User-Agent и формат дат.
+```
+
+---
+
+## Заголовок User-Agent
+
+Сервер KNMDB **записывает значение заголовка `User-Agent` в базу данных** при
+входе (`AuthorizationController`, поле `UserAgent`). Если заголовок не передан,
+запись завершается ошибкой:
+
+```json
+{"resultCode":2,"resultMessage":"Unexpected error(s) occurred: An error occurred while saving the entity changes","actionResult":null}
+```
+
+Симптом обманчив: выглядит как сбой сервера, а на самом деле интеграция не
+отправила заголовок. Диагностика простая — если «без `User-Agent` не работает,
+а с любым значением работает», причина именно в этом.
+
+SDK отправляет заголовок **всегда**, даже если приложение его не задало, —
+подставляется `Knddb.TrackAndTrace.SDK/1.0`. Своё значение задавайте в настройках:
+
+```csharp
+var options = new KnddbClientOptions
+{
+    UserAgent = "MyPharmacyApp/2.1 (+https://example.kg; support@example.kg)",
+};
+```
+
+```dart
+final options = KnddbClientOptions(
+  userAgent: 'MyPharmacyApp/2.1 (+https://example.kg; support@example.kg)',
+);
+```
+
+Указывайте название и версию приложения: это помогает администратору KNMDB
+отличить интеграции в журналах и при разборе инцидентов.
+
+---
+
 ## Аутентификация
+
+### Области доступа (scope): только `api`
+
+> **Не добавляйте `offline_access` — вход перестанет работать.**
+>
+> Сервер KNMDB регистрирует единственную область: `options.RegisterScopes("api")`
+> в конфигурации OpenIddict. Область `offline_access` в OpenIddict разрешена
+> **только** при включённом потоке обновления токена (`AllowRefreshTokenFlow()`).
+> На сервере KNMDB он не включён, поэтому запрос с этой областью отклоняется
+> **целиком**, ещё до проверки логина и пароля:
+>
+> ```json
+> {"error":"invalid_request","error_description":"The 'offline_access' scope is not allowed.","error_uri":"https://documentation.openiddict.com/errors/ID2035"}
+> ```
+>
+> Симптом обманчив: ошибка выглядит как проблема с учётной записью, хотя дело
+> в лишней области. Проверено на тестовом контуре.
+>
+> SDK запрашивает `api`. Если ваша конфигурация сервера отличается, задайте
+> область явно: `KnddbClientOptions.Scope` (.NET) / `KnddbClientOptions(scope:)` (Dart).
+> Пустое значение означает «не передавать `scope` вовсе».
 
 ### `POST /connect/token` — получение токена
 
@@ -47,11 +281,10 @@
 
 | Поле | Тип | Обязательно | Описание |
 |---|---|---|---|
-| `grant_type` | string | да | `password` — вход по логину и паролю; `refresh_token` — обновление |
+| `grant_type` | string | да | **Только `password`** — вход по логину и паролю. Сервер не поддерживает `refresh_token` |
 | `username` | string | при `password` | Логин пользователя KNMDB |
 | `password` | string | при `password` | Пароль пользователя KNMDB |
-| `refresh_token` | string | при `refresh_token` | Ранее полученный токен обновления |
-| `scope` | string | нет | Области доступа; SDK запрашивает `api offline_access` |
+| `scope` | string | нет | Область доступа. SDK запрашивает `api` — это единственная зарегистрированная область |
 
 Ответ:
 
@@ -59,8 +292,8 @@
 |---|---|---|
 | `access_token` | string | JWT для заголовка `Authorization: Bearer ...` |
 | `token_type` | string | Тип токена, всегда `Bearer` |
-| `expires_in` | int | Время жизни токена доступа **в секундах** |
-| `refresh_token` | string | Токен обновления (при наличии `offline_access`) |
+| `expires_in` | int | Время жизни токена доступа **в секундах**. Сервер выдаёт 2 часа (7200) |
+| `refresh_token` | string | Токен обновления, если сервер его выдал |
 | `scope` | string | Выданные области доступа |
 | `id_token` | string | Токен идентификации OpenID Connect (SDK не использует) |
 
@@ -68,9 +301,13 @@
 
 ```bash
 curl -H "content-type: application/x-www-form-urlencoded" \
-     -d "grant_type=password&username=<логин>&password=<пароль>" \
+     -H "user-agent: MyApp/1.0" \
+     -d "grant_type=password&username=<логин>&password=<пароль>&scope=api" \
      https://testndbapi.med.kg/connect/token
 ```
+
+> Заголовок `user-agent` в примере не случаен: без него сервер не может
+> сохранить запись о входе — см. [Заголовок User-Agent](#заголовок-user-agent).
 
 ### `POST /connect/logout` — выход
 
@@ -78,10 +315,24 @@ SDK очищает токены локально в любом случае, д�
 
 ### Автоматическое продление токена
 
+Сервер KNMDB **не поддерживает поток `refresh_token`** (`grant_type=refresh_token`
+отвечает `unsupported_grant_type`, поток `AllowRefreshTokenFlow()` в конфигурации
+не включён). Токен доступа живёт 2 часа.
+
+Порядок действий SDK:
+
 1. Токен обновляется за `KnddbClientOptions.TokenExpirationMargin` (по умолчанию 30 секунд) до истечения.
-2. Если `refresh_token` отклонён — SDK автоматически повторяет вход по сохранённым учётным данным.
-3. При ответе **401** запрос повторяется один раз с принудительно обновлённым токеном.
-4. Чтобы не держать пароль в памяти: `SignInAsync(..., storeCredentials: false)`.
+2. Если сервер выдал `refresh_token` (например, на конфигурации с включённым
+   потоком обновления) — используется он.
+3. Если токена обновления нет, SDK **повторно выполняет вход по сохранённым
+   учётным данным** — приложение этого не замечает.
+4. Если учётные данные не сохранены (`storeCredentials: false`) и токен истёк —
+   выбрасывается `KnddbAuthenticationException`, требуется новый вход.
+5. При ответе **401** запрос повторяется один раз с принудительно обновлённым токеном.
+
+> **Практический вывод:** для долго работающего приложения сохраняйте учётные
+> данные при входе (значение по умолчанию `storeCredentials: true`). Иначе
+> каждые 2 часа потребуется повторный ввод пароля оператором.
 
 ---
 
@@ -141,6 +392,18 @@ SDK очищает токены локально в любом случае, д�
 ```csharp
 var response = await client.GetAllStakeholdersAsync();
 ```
+
+> **Метод не поддерживает постраничную выдачу и возвращает весь справочник.**
+> Проверено на тестовом контуре: **11 468 организаций** в одном ответе (несколько
+> мегабайт). Метод возвращает все организации республики, а не только ваши.
+>
+> Что делать при интеграции:
+>
+> - вызывайте метод **один раз** и кэшируйте результат; для справочника организаций
+>   достаточно обновлять его раз в сутки;
+> - не вызывайте его перед каждой операцией — используйте кэш по `Code`;
+> - на мобильных устройствах учитывайте объём ответа: сохраняйте справочник
+>   локально и обновляйте по расписанию.
 
 #### ~~`GetSupportedQrTypesAsync` — типы QR-кодов~~ (устаревший)
 
@@ -219,6 +482,19 @@ var response = await client.GetAllStakeholdersAsync();
 
 > `GetTransferListByFilterAsync()` без аргументов вернёт список без фильтров.
 > `GetMedicineListAsync()` без аргументов вернёт весь справочник.
+>
+> **Всегда задавайте фильтры.** Постраничной выдачи нет, а объёмы большие —
+> проверено на тестовом контуре:
+>
+> | Метод без фильтров | Объём ответа |
+> |---|---|
+> | `GetTransferListByFilterAsync()` | **15 702** перемещения |
+> | `GetMedicineListAsync()` | **3 919** препаратов |
+> | `GetAllStakeholdersAsync()` | **11 468** организаций |
+>
+> Ограничивайте выборку периодом `DeclarationDateFrom` / `DeclarationDateTo`,
+> состоянием `CurrentState` и организацией — иначе ответ будет в несколько
+> мегабайт, а разбор займёт секунды.
 
 ### Складской учёт
 
@@ -662,11 +938,18 @@ public sealed class KnddbDeclarationSettings
 
 ## Исключения
 
-Все неуспешные HTTP-статусы приводятся к `KnddbApiException`.
+Все неуспешные ответы приводятся к `KnddbApiException` — и по HTTP-статусу,
+и по коду результата в конверте (см. [Конверт ответа](#конверт-ответа-и-коды-результата)).
 
 | Член | Описание |
 |---|---|
-| `StatusCode` | HTTP-статус ответа |
+| `ResultCode` | **Код результата из конверта.** `null`, если конверта в ответе не было |
+| `ResultMessage` | Сообщение сервера из конверта (при ошибке бизнес-логики — на английском) |
+| `IsBusinessError` | Конверт с ненулевым `ResultCode` — ошибка бизнес-логики с HTTP 200 |
+| `IsProductNotFound` | HTTP 404 **или** код 6022/6039 — упаковка не найдена |
+| `IsProductNotSuitableForSale` | Код 6023 — упаковка не подходит для продажи |
+| `GetResultDescription()` | Русское описание кода; если код неизвестен — `ResultMessage` |
+| `StatusCode` | HTTP-статус ответа. Для ошибок бизнес-логики — **200** |
 | `Method`, `RequestUri` | Метод и путь запроса |
 | `ResponseBody` | «Сырое» тело ответа |
 | `ProblemDetails` | Разобранный ProblemDetails (RFC 7807) |
@@ -676,12 +959,13 @@ public sealed class KnddbDeclarationSettings
 | `IsForbidden` | HTTP 403 — не хватает роли API |
 | `IsBadRequest` | HTTP 400 |
 | `IsAuthenticationFailure` | HTTP 401 или 403 |
+| `IsConflict` | HTTP 409 |
 | `IsTransientFailure` | HTTP 5xx или 408 — имеет смысл повторить |
 
 | Тип исключения | Когда возникает |
 |---|---|
-| `KnddbApiException` | Любой неуспешный HTTP-статус |
-| `KnddbAuthenticationException` | 401, неверный логин/пароль, отсутствие учётных данных, отклонённый `refresh_token` |
+| `KnddbApiException` | Неуспешный HTTP-статус **или** ненулевой `resultCode` в конверте |
+| `KnddbAuthenticationException` | 401, неверный логин/пароль, отсутствие учётных данных, отклонённый `refresh_token`, ошибка в конверте на `/connect/token` |
 | `KnddbConfigurationException` | Настройки некорректны, сессия не найдена (ошибка до обращения к сети) |
 
 ```csharp
@@ -693,9 +977,14 @@ catch (KnddbAuthenticationException ex)
 {
     await client.SignInAsync(login, password);   // сессия недействительна — входим заново
 }
-catch (KnddbApiException ex) when (ex.IsNotFound)
+catch (KnddbApiException ex) when (ex.IsProductNotFound)
 {
-    // упаковка не найдена
+    // Упаковка не найдена: и HTTP 404, и код 6022 в конверте с HTTP 200
+}
+catch (KnddbApiException ex) when (ex.IsBusinessError)
+{
+    // Прочие ошибки бизнес-логики: показываем русское описание
+    Console.WriteLine($"{ex.ResultCode}: {ex.GetResultDescription()}");
 }
 catch (KnddbApiException ex)
 {

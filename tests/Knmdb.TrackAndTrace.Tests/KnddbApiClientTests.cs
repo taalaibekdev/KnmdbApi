@@ -87,8 +87,7 @@ public sealed class KnddbApiClientTests
         var (client, handler, http) = CreateClient((request, _) => request.RequestUri!.AbsolutePath switch
         {
             "/connect/token" => TokenResponse("token-a", "refresh-a"),
-            _ => RecordingHttpMessageHandler.Json(
-                HttpStatusCode.OK,
+            _ => RecordingHttpMessageHandler.Envelope(
                 """{ "numberOfStakeholders": 1, "stakeholders": [ { "code": 1, "name": "A", "type": 5 } ] }"""),
         });
 
@@ -114,7 +113,7 @@ public sealed class KnddbApiClientTests
         var (client, handler, http) = CreateClient((request, _) => request.RequestUri!.AbsolutePath switch
         {
             "/connect/token" => TokenResponse("token-a", "refresh-a"),
-            _ => RecordingHttpMessageHandler.Json(HttpStatusCode.OK, """{ "numberOfStakeholders": 0 }"""),
+            _ => RecordingHttpMessageHandler.Envelope("""{ "numberOfStakeholders": 0 }"""),
         });
 
         using (http)
@@ -136,7 +135,7 @@ public sealed class KnddbApiClientTests
         var (client, handler, http) = CreateClient((request, _) => request.RequestUri!.AbsolutePath switch
         {
             "/connect/token" => TokenResponse($"token-{++tokenCounter}", $"refresh-{tokenCounter}"),
-            _ => RecordingHttpMessageHandler.Json(HttpStatusCode.OK, """{ "numberOfStakeholders": 0 }"""),
+            _ => RecordingHttpMessageHandler.Envelope("""{ "numberOfStakeholders": 0 }"""),
         });
 
         using (http)
@@ -168,7 +167,7 @@ public sealed class KnddbApiClientTests
         var (client, handler, http) = CreateClient((request, _) => request.RequestUri!.AbsolutePath switch
         {
             "/connect/token" => TokenResponse($"token-{++tokenCounter}", $"refresh-{tokenCounter}"),
-            _ => RecordingHttpMessageHandler.Json(HttpStatusCode.OK, """{ "numberOfStakeholders": 0 }"""),
+            _ => RecordingHttpMessageHandler.Envelope("""{ "numberOfStakeholders": 0 }"""),
         });
 
         using (http)
@@ -194,8 +193,7 @@ public sealed class KnddbApiClientTests
     {
         var (client, handler, http) = CreateClient((request, _) => request.RequestUri!.AbsolutePath switch
         {
-            "/api/TrackAndTrace/ProductInquiryQRCode" => RecordingHttpMessageHandler.Json(
-                HttpStatusCode.OK,
+            "/api/TrackAndTrace/ProductInquiryQRCode" => RecordingHttpMessageHandler.Envelope(
                 """{ "productBoxId": 1, "gtin": "12345678901234", "isAvailableForSale": true, "productStatus": 1, "productState": 3 }"""),
             _ => RecordingHttpMessageHandler.Empty(HttpStatusCode.InternalServerError),
         });
@@ -218,7 +216,7 @@ public sealed class KnddbApiClientTests
         var (client, handler, http) = CreateClient((request, _) => request.RequestUri!.AbsolutePath switch
         {
             "/connect/token" => TokenResponse("token-a", "r"),
-            _ => RecordingHttpMessageHandler.Json(HttpStatusCode.OK, """{ "declarationId": 99 }"""),
+            _ => RecordingHttpMessageHandler.Envelope("""{ "declarationId": 99 }"""),
         });
 
         using (http)
@@ -319,7 +317,7 @@ public sealed class KnddbApiClientTests
             apiAttempts++;
             return apiAttempts == 1
                 ? RecordingHttpMessageHandler.Empty(HttpStatusCode.Unauthorized)
-                : RecordingHttpMessageHandler.Json(HttpStatusCode.OK, """{ "numberOfStakeholders": 7 }""");
+                : RecordingHttpMessageHandler.Envelope("""{ "numberOfStakeholders": 7 }""");
         });
 
         using (http)
@@ -376,7 +374,7 @@ public sealed class KnddbApiClientTests
         {
             "/connect/token" => TokenResponse("token-a", "r"),
             "/connect/logout" => RecordingHttpMessageHandler.Empty(HttpStatusCode.InternalServerError),
-            _ => RecordingHttpMessageHandler.Json(HttpStatusCode.OK, """{ "numberOfStakeholders": 0 }"""),
+            _ => RecordingHttpMessageHandler.Envelope("""{ "numberOfStakeholders": 0 }"""),
         });
 
         using (http)
@@ -398,7 +396,7 @@ public sealed class KnddbApiClientTests
         var (client, handler, http) = CreateClient((request, _) => request.RequestUri!.AbsolutePath switch
         {
             "/connect/token" => TokenResponse("token-a", "r"),
-            _ => RecordingHttpMessageHandler.Json(HttpStatusCode.OK, """{ "declarationId": 55 }"""),
+            _ => RecordingHttpMessageHandler.Envelope("""{ "declarationId": 55 }"""),
         });
 
         using (http)

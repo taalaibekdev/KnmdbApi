@@ -1,0 +1,50 @@
+# Правила анализа для пакета knddb_track_and_trace.
+#
+# Подключаем рекомендуемый набор Dart и усиливаем проверки там, где это важно
+# для публичного API: публичные члены должны иметь документацию, а небезопасные
+# конструкции запрещены.
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # Отсутствие документации у публичного члена — предупреждение:
+    # пакет публикуется на pub.dev с полной русской документацией.
+    public_member_api_docs: warning
+    # Не допускаем мёртвый код и недостижимые ветки.
+    dead_code: warning
+
+linter:
+  rules:
+    # --- Документация -----------------------------------------------------
+    package_api_docs: true
+    slash_for_doc_comments: true
+
+    # --- Безопасность типов ----------------------------------------------
+    avoid_dynamic_calls: true
+    avoid_type_to_string: true
+    prefer_void_to_null: true
+    tighten_type_of_initializing_formals: true
+
+    # --- Асинхронность ----------------------------------------------------
+    avoid_void_async: true
+    unawaited_futures: false
+    discarded_futures: true
+
+    # --- Чистота кода -----------------------------------------------------
+    always_declare_return_types: true
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+    unnecessary_lambdas: true
+    unnecessary_parenthesis: true
+    directives_ordering: true
+    sort_pub_dependencies: false
+    prefer_single_quotes: true
+    use_super_parameters: true
+    avoid_print: true
+    cancel_subscriptions: true
+    close_sinks: true
+    only_throw_errors: true

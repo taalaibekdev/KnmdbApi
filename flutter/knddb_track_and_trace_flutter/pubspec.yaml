@@ -1,0 +1,40 @@
+name: knddb_track_and_trace_flutter
+description: >-
+  Интеграция Dart/Flutter SDK KNMDB Track and Trace с Flutter: сохранение входа
+  в защищённом хранилище платформы (Keychain, EncryptedSharedPreferences,
+  libsecret) и восстановление сессии при запуске приложения.
+version: 1.0.1
+repository: https://github.com/taalaibekdev/KnmdbApi
+issue_tracker: https://github.com/taalaibekdev/KnmdbApi/issues
+homepage: https://github.com/taalaibekdev/KnmdbApi/tree/main/flutter/knddb_track_and_trace_flutter
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^10.0.0
+  knddb_track_and_trace: ^1.0.1
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_secure_storage_platform_interface: ^2.1.1
+  flutter_test:
+    sdk: flutter
+
+# Пока базовый пакет не опубликован на pub.dev, он берётся из этого же
+# репозитория. Переопределения зависимостей не влияют на потребителей пакета,
+# поэтому публикации не мешают. После публикации knddb_track_and_trace этот
+# блок можно удалить.
+dependency_overrides:
+  knddb_track_and_trace:
+    path: ../../dart/knddb_track_and_trace
+
+topics:
+  - api
+  - sdk
+  - medicine
+  - track-and-trace
+  - knmdb

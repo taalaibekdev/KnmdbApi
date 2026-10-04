@@ -9,13 +9,34 @@ SDK (DI-сервис) для **API Track and Trace** системы **KNMDB / KN
 
 ---
 
+## SDK для других платформ
+
+Этот репозиторий содержит SDK для нескольких платформ. Документация API —
+общая, примеры в ней приведены на C# (эталонный SDK).
+
+| Платформа | Пакет | Каталог | Документация |
+|---|---|---|---|
+| **.NET 10** | [`Knmdb.TrackAndTrace`](https://www.nuget.org/packages/Knmdb.TrackAndTrace) | `src/` | этот файл |
+| **Dart** | `knddb_track_and_trace` | [`dart/knddb_track_and_trace`](dart/knddb_track_and_trace) | [README Dart-пакета](dart/knddb_track_and_trace/README.md) |
+| **Flutter** | `knddb_track_and_trace_flutter` | [`flutter/knddb_track_and_trace_flutter`](flutter/knddb_track_and_trace_flutter) | **[docs/FLUTTER.md](docs/FLUTTER.md)**, [README пакета](flutter/knddb_track_and_trace_flutter/README.md) |
+
+Пакет для Flutter дополняет Dart-пакет защищённым хранением токенов
+и контроллером состояния входа.
+
+> **Разработчикам мобильных приложений на Flutter:** сразу переходите
+> к [docs/FLUTTER.md](docs/FLUTTER.md) — это сквозное руководство
+> от установки до готовых экранов входа и проверки лекарства по QR-коду.
+
+---
+
 ## Документация
 
 | Документ | Для чего |
 |---|---|
-| **README.md** (этот файл) | Установка, контуры, быстрый старт, смена пользователя |
+| **README.md** (этот файл) | .NET SDK: установка, контуры, быстрый старт, смена пользователя |
+| **[docs/FLUTTER.md](docs/FLUTTER.md)** | **Flutter:** установка, настройка платформ, экраны, хранение токенов, сборка |
 | [docs/SCENARIOS.md](docs/SCENARIOS.md) | **Начните отсюда для интеграции**: пошаговые сценарии «от импортёра до аптеки» с кодом |
-| [docs/API-REFERENCE.md](docs/API-REFERENCE.md) | Все 23 метода, каждое поле запросов и ответов, роли API |
+| [docs/API-REFERENCE.md](docs/API-REFERENCE.md) | Все 23 метода, каждое поле запросов и ответов |
 | [docs/ENUMS.md](docs/ENUMS.md) | Все перечисления: числа, названия, пояснения |
 
 ---
@@ -253,19 +274,46 @@ await client.SignInAsync("логин", "пароль");                         
 await client.SignInAsync("логин", "пароль", storeCredentials: false);   // не хранить пароль в памяти
 ```
 
+### Область доступа: только `api`
+
+> **Не добавляйте `offline_access` — вход перестанет работать.**
+>
+> Сервер регистрирует единственную область `api`. Область `offline_access`
+> в OpenIddict разрешена только при включённом потоке обновления токена,
+> которого на сервере KNMDB нет. Запрос с ней отклоняется **целиком**, ещё
+> до проверки логина и пароля:
+>
+> ```json
+> {"error":"invalid_request","error_description":"The 'offline_access' scope is not allowed."}
+> ```
+>
+> SDK запрашивает `api`. Если конфигурация вашего сервера отличается, задайте
+> область явно:
+>
+> ```csharp
+> var options = new KnddbClientOptions { Scope = "api" };
+> ```
+
 Проверка доступа через curl:
 
 ```bash
 curl -H "content-type: application/x-www-form-urlencoded" \
-     -d "grant_type=password&username=<логин>&password=<пароль>" \
+     -H "user-agent: MyApp/1.0" \
+     -d "grant_type=password&username=<логин>&password=<пароль>&scope=api" \
      https://testndbapi.med.kg/connect/token
 ```
 
 **Автоматическое продление:**
 
 1. Токен обновляется за `TokenExpirationMargin` (по умолчанию 30 секунд) до истечения.
-2. Если `refresh_token` отклонён — SDK автоматически повторяет вход по сохранённым учётным данным.
-3. При ответе **401** запрос повторяется один раз с принудительно обновлённым токеном.
+2. Сервер KNMDB **не поддерживает `grant_type=refresh_token`** — поток обновления
+   в его конфигурации не включён. Токен доступа живёт 2 часа.
+3. Поэтому, когда токен истекает, SDK **повторно входит по сохранённым учётным
+   данным** — приложение этого не замечает. Убедитесь, что вход выполнен
+   со `storeCredentials: true` (значение по умолчанию), иначе оператору
+   придётся вводить пароль каждые 2 часа.
+4. Если сервер всё же выдал `refresh_token`, SDK использует его.
+5. При ответе **401** запрос повторяется один раз с принудительно обновлённым токеном.
 
 Описание полей запроса и ответа токена: [API-REFERENCE.md, Аутентификация](docs/API-REFERENCE.md#аутентификация).
 
@@ -278,11 +326,15 @@ curl -H "content-type: application/x-www-form-urlencoded" \
 
 ### Справочники
 
-| Метод | HTTP |
-|---|---|
-| `GetAllStakeholdersAsync()` | `GET .../GetAllStakeholders` |
-| `GetSupportedQrTypesAsync()` — **устаревший** | `GET .../GetSupportedQRTypes` |
-| `GetMedicineListAsync(request?)` | `POST .../GetMedicineList` |
+| Метод | HTTP | Объём без фильтров |
+|---|---|---|
+| `GetAllStakeholdersAsync()` | `GET .../GetAllStakeholders` | ~11 468 организаций |
+| `GetSupportedQrTypesAsync()` — **устаревший** | `GET .../GetSupportedQRTypes` | — |
+| `GetMedicineListAsync(request?)` | `POST .../GetMedicineList` | ~3 919 препаратов |
+
+> **Постраничной выдачи нет.** Вызывайте справочники один раз и кэшируйте
+> результат — объёмы проверены на тестовом контуре. Для `GetMedicineListAsync`
+> используйте `LastUpdate` для инкрементального обновления.
 
 ### Проверка лекарства (без авторизации)
 
@@ -362,6 +414,53 @@ curl -H "content-type: application/x-www-form-urlencoded" \
 
 ## Обработка ошибок
 
+### Ошибки бизнес-логики приходят с HTTP 200
+
+Это главная особенность API KNMDB, которую нужно знать с самого начала.
+Сервер отвечает конвертом `{ resultCode, resultMessage, actionResult }` и при
+ошибке бизнес-логики **оставляет HTTP-статус `200 OK`**:
+
+```http
+HTTP/1.1 200 OK
+{"resultCode":6023,"resultMessage":"Product with QRCode 0104… is not suitable for sale","actionResult":null}
+```
+
+Отличить успех от ошибки по HTTP-статусу невозможно — признак ошибки это
+ненулевой `resultCode`. SDK проверяет его за вас и выбрасывает
+`KnddbApiException`, поэтому достаточно ловить исключение:
+
+```csharp
+try
+{
+    await client.SalesDeclarationAsync(request);
+}
+catch (KnddbApiException ex) when (ex.IsBusinessError)
+{
+    // HTTP-статус здесь 200, а причина — в ResultCode
+    switch (ex.ResultCode)
+    {
+        case KnddbResultCodes.ProductWithQrCodeNotFound:              // 6022
+            Console.WriteLine("Упаковка с таким QR-кодом не найдена в системе");
+            break;
+
+        case KnddbResultCodes.ProductWithQrCodeNotSuitableForSale:    // 6023
+            Console.WriteLine("Упаковка уже продана или не подходит для продажи");
+            break;
+
+        default:
+            Console.WriteLine(ex.GetResultDescription());  // русское описание кода
+            break;
+    }
+}
+```
+
+Готовые признаки: `IsBusinessError`, `IsProductNotFound` (404 или 6022/6039),
+`IsProductNotSuitableForSale` (6023). Русские описания кодов —
+в `KnddbResultCodes.Describe(code)`. Полный список кодов:
+[API-REFERENCE.md, Коды результата](docs/API-REFERENCE.md#коды-результата).
+
+### Общая обработка
+
 ```csharp
 try
 {
@@ -371,9 +470,9 @@ catch (KnddbAuthenticationException ex)      // 401 или ошибка вход
 {
     await client.SignInAsync(login, password);
 }
-catch (KnddbApiException ex) when (ex.IsNotFound)
+catch (KnddbApiException ex) when (ex.IsProductNotFound)
 {
-    Console.WriteLine("Упаковка не найдена");
+    Console.WriteLine("Упаковка не найдена");   // HTTP 404 или код 6022
 }
 catch (KnddbApiException ex) when (ex.IsForbidden)
 {
@@ -382,6 +481,11 @@ catch (KnddbApiException ex) when (ex.IsForbidden)
 catch (KnddbApiException ex)
 {
     Console.WriteLine($"HTTP {ex.StatusCode}: {ex.Message}; traceId={ex.TraceId}");
+
+    if (ex.ResultCode is not null)
+    {
+        Console.WriteLine($"resultCode {ex.ResultCode}: {ex.GetResultDescription()}");
+    }
 
     foreach (var (field, message) in ex.Errors ?? [])
     {
@@ -392,14 +496,29 @@ catch (KnddbApiException ex)
 
 | Тип исключения | Когда возникает |
 |---|---|
-| `KnddbApiException` | Любой неуспешный HTTP-статус |
-| `KnddbAuthenticationException` | 401, неверный логин/пароль, отсутствие учётных данных |
+| `KnddbApiException` | Неуспешный HTTP-статус **или** ненулевой `resultCode` в конверте |
+| `KnddbAuthenticationException` | 401, неверный логин/пароль, отсутствие учётных данных, ошибка на `/connect/token` |
 | `KnddbConfigurationException` | Настройки некорректны, сессия не найдена |
 
-Полезные свойства: `IsNotFound` (404), `IsForbidden` (403), `IsBadRequest` (400),
-`IsTransientFailure` (5xx/408), `TraceId`, `Errors`, `ProblemDetails`.
+Полезные свойства: `ResultCode`, `ResultMessage`, `IsBusinessError`,
+`IsProductNotFound`, `IsProductNotSuitableForSale`, `GetResultDescription()`,
+`IsNotFound` (404), `IsForbidden` (403), `IsBadRequest` (400),
+`IsConflict` (409), `IsTransientFailure` (5xx/408), `TraceId`, `Errors`,
+`ProblemDetails`.
 
 Полный список: [API-REFERENCE.md, Исключения](docs/API-REFERENCE.md#исключения).
+
+### Если что-то не работает
+
+| Симптом | Причина | Что делать |
+|---|---|---|
+| **Вход падает с `invalid_request`: «The 'offline_access' scope is not allowed»** | В запросе `scope` содержит `offline_access`. Сервер регистрирует только `api`, а `offline_access` в OpenIddict требует включённого потока обновления токена | SDK запрашивает `api`. Если задавали `Scope` сами — уберите `offline_access` |
+| Вход падает с `resultCode 2` «An error occurred while saving the entity changes» | Не отправлен заголовок `User-Agent`: сервер записывает его в базу при входе | SDK отправляет заголовок всегда. Если задаёте свой — проверьте, что он не пустой |
+| Запрос с датой падает с `resultCode 2` | Дата передана с временем (`2026-03-15T12:00:00Z`) | SDK отбрасывает время автоматически. При своей сериализации используйте `yyyy-MM-dd` |
+| Код считает ошибку успехом и получает пустой объект | Проверяется только HTTP-статус, а ошибка пришла с HTTP 200 | Проверяйте `resultCode` (или ловите `KnddbApiException`) |
+| Через 2 часа работы требуется повторный вход | Сервер не поддерживает `refresh_token`, а учётные данные не сохранены | Выполняйте вход со `storeCredentials: true` (значение по умолчанию) |
+| Ответ приходит несколько секунд, большой объём | Метод вызван без фильтров: `GetAllStakeholders` — 11 468 организаций, `GetTransferListByFilter` — 15 702 перемещения | Задавайте фильтры и кэшируйте справочники |
+| `resultCode 2` на других методах | Несовместимость запроса с сервером | Проверьте формат дат, заголовок `User-Agent` и `Scope` |
 
 ---
 
@@ -422,6 +541,62 @@ dotnet build Knmdb.TrackAndTrace.slnx -c Release
 dotnet test tests/Knmdb.TrackAndTrace.Tests
 dotnet pack src/Knmdb.TrackAndTrace -c Release -o ./artifacts
 ```
+
+### Dart
+
+```bash
+cd dart/knddb_track_and_trace
+dart pub get
+dart analyze
+dart test
+```
+
+### Flutter
+
+```bash
+cd flutter/knddb_track_and_trace_flutter
+flutter pub get
+flutter analyze
+flutter test
+```
+
+---
+
+## Публикация пакетов
+
+### NuGet
+
+```bash
+dotnet pack src/Knmdb.TrackAndTrace -c Release -o ./artifacts
+dotnet nuget push ./artifacts/Knmdb.TrackAndTrace.<версия>.nupkg \
+  --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY
+```
+
+### pub.dev
+
+На pub.dev нет API-ключей: публикация подтверждается в браузере, а учётные
+данные сохраняются локально после первого входа. Порядок важен — пакет
+для Flutter зависит от Dart-пакета.
+
+```bash
+# 1. Проверить и опубликовать базовый Dart-пакет
+cd dart/knddb_track_and_trace
+dart pub publish --dry-run     # должно быть: Package has 0 warnings
+dart pub publish               # откроет браузер для подтверждения
+
+# 2. Убедиться, что пакет появился на pub.dev, затем убрать dependency_overrides
+#    из flutter/knddb_track_and_trace_flutter/pubspec.yaml (блок с пометкой
+#    «Пока базовый пакет не опубликован»).
+
+# 3. Проверить и опубликовать пакет для Flutter
+cd flutter/knddb_track_and_trace_flutter
+flutter pub get
+flutter pub publish --dry-run  # должно быть: Package has 0 warnings and 0 hints
+flutter pub publish
+```
+
+Версия пакета — поле `version` в соответствующем `pubspec.yaml`. Опубликованную
+версию изменить нельзя, поэтому при правках поднимайте номер.
 
 | Проект | Назначение |
 |---|---|

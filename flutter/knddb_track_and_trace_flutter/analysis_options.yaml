@@ -1,0 +1,30 @@
+# Правила анализа для пакета knddb_track_and_trace_flutter.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    public_member_api_docs: warning
+    dead_code: warning
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+
+linter:
+  rules:
+    always_declare_return_types: true
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+    unnecessary_lambdas: true
+    directives_ordering: true
+    prefer_single_quotes: true
+    avoid_print: true
+    use_super_parameters: true
